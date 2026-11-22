@@ -77,6 +77,7 @@ pub unsafe extern "C" fn indroid_neo_boot(
     let (Some(rom), Some(state)) = (path(rom), path(state)) else {
         return -1;
     };
+    let nofile = indroid_kernel::raise_nofile_limit();
     // ':'-separated overlay directories (first wins), e.g. the app bundle's
     // rom-overlay/emu13:rom-overlay/common.
     let overlays: Vec<std::path::PathBuf> = path(overlays)
@@ -94,6 +95,10 @@ pub unsafe extern "C" fn indroid_neo_boot(
     // Mirror logcat into the console sink.
     std::env::set_var("INDROID_LOGCAT", "1");
     let sink = Arc::new(Sink(log, ctx as usize));
+    {
+        let m = format!("[app] open-file limit raised to {nofile}\n");
+        (sink.0)(ctx, m.as_ptr(), m.len());
+    }
     let s2 = sink.clone();
     let k = indroid_kernel::Kernel::new(indroid_kernel::Config {
         rom,
