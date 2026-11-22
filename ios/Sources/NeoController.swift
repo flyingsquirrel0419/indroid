@@ -1,81 +1,95 @@
 import UIKit
 
-/// indroid: boots real Android 13 (arm64) as soon as the app opens. The first
-/// launch downloads the system image from Google's public SDK repository and
-/// installs it; every launch after that boots straight away. Shows the
-/// console/logcat while Android starts.
+/// indroid: Android 13 (arm64) starts the moment the app opens. The first launch
+/// downloads the system image from Google's public SDK repository and installs it;
+/// every launch after that boots straight away. There is nothing to tap: the
+/// launch screen is followed by a quiet status view that matches it (no flash),
+/// then by Android's own display.
 final class NeoController: UIViewController {
     static let imageURL = URL(string: "https://dl.google.com/android/repository/sys-img/android/arm64-v8a-33_r02.zip")!
     private let fm = FileManager.default
-    private let textView = UITextView()
-    private let button = UIButton(type: .system)
-    private let status = UILabel()
     private var log = ""
     private var pendingFlush = false
-    private var booted = false
     private var timer: Timer?
     private let display = DisplayView()
-    private let overlay = UIView()
+    private let splash = UIView()
+    private let spinner = UIActivityIndicatorView(style: .medium)
+    private let status = UILabel()
+    private let retryButton = UIButton(type: .system)
     private let logButton = UIButton(type: .system)
     private var framePending = false
     private var latestFrame: (Int, Int, Data)?
     private let frameLock = NSLock()
     private var sawFrame = false
+    private weak var logController: LogController?
 
     private var base: URL { fm.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent("neo", isDirectory: true) }
     private var rom: URL { base.appendingPathComponent("rom13", isDirectory: true) }
     private var state: URL { base.appendingPathComponent("state13", isDirectory: true) }
     private var romReady: Bool { fm.fileExists(atPath: rom.appendingPathComponent("system/bin/init").path) }
 
+    // Android's screen is portrait and fills the display: hide system chrome once it shows.
+    override var prefersStatusBarHidden: Bool { sawFrame }
+    override var prefersHomeIndicatorAutoHidden: Bool { sawFrame }
+    override var supportedInterfaceOrientations: UIInterfaceOrientationMask { .portrait }
+
     override func viewDidLoad() {
         super.viewDidLoad()
+        // Same color as the system launch screen in light and dark appearance, so
+        // nothing flashes between launch and the first screen.
         view.backgroundColor = .systemBackground
-        textView.isEditable = false
-        textView.font = .monospacedSystemFont(ofSize: 10, weight: .regular)
-        textView.backgroundColor = .black
-        textView.textColor = .green
-        status.font = .preferredFont(forTextStyle: .footnote)
-        status.numberOfLines = 0
-        button.titleLabel?.font = .preferredFont(forTextStyle: .headline)
-        button.addTarget(self, action: #selector(primary), for: .touchUpInside)
         display.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(display)
-        overlay.backgroundColor = .systemBackground
-        overlay.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(overlay)
-        logButton.setTitle("Log", for: .normal)
-        logButton.backgroundColor = UIColor.black.withAlphaComponent(0.4)
-        logButton.setTitleColor(.white, for: .normal)
-        logButton.layer.cornerRadius = 12
-        logButton.contentEdgeInsets = UIEdgeInsets(top: 4, left: 10, bottom: 4, right: 10)
+
+        splash.backgroundColor = .systemBackground
+        splash.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(splash)
+
+        spinner.hidesWhenStopped = true
+        spinner.startAnimating()
+        status.font = .preferredFont(forTextStyle: .footnote)
+        status.adjustsFontForContentSizeCategory = true
+        status.textColor = .secondaryLabel
+        status.textAlignment = .center
+        status.numberOfLines = 0
+        status.accessibilityTraits = .updatesFrequently
+
+        var retry = UIButton.Configuration.filled()
+        retry.title = "Try Again"
+        retry.cornerStyle = .capsule
+        retryButton.configuration = retry
+        retryButton.isHidden = true
+        retryButton.addTarget(self, action: #selector(retryTapped), for: .touchUpInside)
+
+        var logConfig = UIButton.Configuration.plain()
+        logConfig.title = "Show Log"
+        logButton.configuration = logConfig
         logButton.isHidden = true
-        logButton.addTarget(self, action: #selector(toggleLog), for: .touchUpInside)
-        logButton.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(logButton)
+        logButton.addTarget(self, action: #selector(showLog), for: .touchUpInside)
+
+        let stack = UIStackView(arrangedSubviews: [spinner, status, retryButton, logButton])
+        stack.axis = .vertical
+        stack.alignment = .center
+        stack.spacing = 12
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        splash.addSubview(stack)
+
         NSLayoutConstraint.activate([
             display.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             display.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             display.topAnchor.constraint(equalTo: view.topAnchor),
             display.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            overlay.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            overlay.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            overlay.topAnchor.constraint(equalTo: view.topAnchor),
-            overlay.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            logButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -8),
-            logButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 2),
+            splash.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            splash.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            splash.topAnchor.constraint(equalTo: view.topAnchor),
+            splash.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            stack.centerXAnchor.constraint(equalTo: splash.centerXAnchor),
+            stack.centerYAnchor.constraint(equalTo: splash.centerYAnchor),
+            stack.leadingAnchor.constraint(greaterThanOrEqualTo: splash.layoutMarginsGuide.leadingAnchor, constant: 16),
+            stack.trailingAnchor.constraint(lessThanOrEqualTo: splash.layoutMarginsGuide.trailingAnchor, constant: -16),
+            retryButton.heightAnchor.constraint(greaterThanOrEqualToConstant: 44),
+            logButton.heightAnchor.constraint(greaterThanOrEqualToConstant: 44),
         ])
-        let stack = UIStackView(arrangedSubviews: [status, button, textView])
-        stack.axis = .vertical
-        stack.spacing = 8
-        stack.translatesAutoresizingMaskIntoConstraints = false
-        overlay.addSubview(stack)
-        NSLayoutConstraint.activate([
-            stack.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 12),
-            stack.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -12),
-            stack.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 8),
-            stack.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
-        ])
-        refreshButton()
     }
 
     private var started = false
@@ -83,10 +97,32 @@ final class NeoController: UIViewController {
         super.viewDidAppear(animated)
         guard !started else { return }
         started = true
-        primary()
+        start()
     }
 
-    @objc private func toggleLog() { overlay.isHidden.toggle() }
+    private func start() {
+        retryButton.isHidden = true
+        logButton.isHidden = true
+        spinner.startAnimating()
+        if romReady { boot() } else { download() }
+    }
+
+    @objc private func retryTapped() { start() }
+
+    /// Shows the console/logcat. It is a diagnostic, so it is not part of the normal flow.
+    @objc private func showLog() {
+        let vc = LogController(text: log)
+        logController = vc
+        present(UINavigationController(rootViewController: vc), animated: true)
+    }
+
+    private func fail(_ message: String) {
+        timer?.invalidate()
+        spinner.stopAnimating()
+        status.text = message
+        retryButton.isHidden = false
+        logButton.isHidden = false
+    }
 
     /// Called on a renderer thread for every composed frame. Copies the pixels
     /// and keeps only the newest one so a slow main thread never builds a backlog.
@@ -113,29 +149,12 @@ final class NeoController: UIViewController {
             self.display.show(image)
             if !self.sawFrame {
                 self.sawFrame = true
-                self.overlay.isHidden = true
-                self.logButton.isHidden = false
                 self.timer?.invalidate()
+                UIView.animate(withDuration: 0.25, animations: { self.splash.alpha = 0 }) { _ in self.splash.isHidden = true }
+                self.setNeedsStatusBarAppearanceUpdate()
+                self.setNeedsUpdateOfHomeIndicatorAutoHidden()
             }
         }
-    }
-
-    private func refreshButton() {
-        if booted {
-            button.setTitle("Running", for: .normal)
-            button.isEnabled = false
-        } else if romReady {
-            button.setTitle("Boot Android", for: .normal)
-            button.isEnabled = true
-            status.text = "Android 13 system image installed."
-        } else {
-            button.setTitle("Download Android 13 (676 MB)", for: .normal)
-            status.text = "The Android system image is downloaded from Google's public Android SDK repository and installed on this device. Nothing leaves your phone."
-        }
-    }
-
-    @objc private func primary() {
-        if romReady { boot() } else { download() }
     }
 
     private func append(_ s: String) {
@@ -146,24 +165,20 @@ final class NeoController: UIViewController {
                 self.pendingFlush = true
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
                     self.pendingFlush = false
-                    self.textView.text = self.log
-                    self.textView.scrollRangeToVisible(NSRange(location: (self.log as NSString).length - 1, length: 1))
+                    self.logController?.update(self.log)
                 }
             }
         }
     }
 
     private func download() {
-        button.isEnabled = false
-        status.text = "Downloading…"
+        status.text = "Preparing Android 13 for first launch…"
         let task = URLSession.shared.downloadTask(with: Self.imageURL) { [weak self] tmp, _, error in
             guard let self else { return }
             guard let tmp, error == nil else {
                 DispatchQueue.main.async {
-                    self.timer?.invalidate()
-                    self.status.text = "Download failed: \(error?.localizedDescription ?? "?")"
-                    self.button.setTitle("Retry download", for: .normal)
-                    self.button.isEnabled = true
+                    self.fail("Couldn’t download Android. Check your connection and try again.")
+                    self.append("[download] \(error?.localizedDescription ?? "unknown error")\n")
                 }
                 return
             }
@@ -171,14 +186,17 @@ final class NeoController: UIViewController {
             try? self.fm.createDirectory(at: self.base, withIntermediateDirectories: true)
             try? self.fm.removeItem(at: zip)
             try? self.fm.moveItem(at: tmp, to: zip)
-            DispatchQueue.main.async { self.status.text = "Installing…" }
+            DispatchQueue.main.async {
+                self.timer?.invalidate()
+                self.status.text = "Installing Android…"
+            }
             DispatchQueue.global(qos: .userInitiated).async { self.install(zip) }
         }
         task.resume()
         timer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
             guard let self, task.state == .running, task.countOfBytesExpectedToReceive > 0 else { return }
             let p = Double(task.countOfBytesReceived) / Double(task.countOfBytesExpectedToReceive)
-            self.status.text = String(format: "Downloading… %.0f%%", p * 100)
+            self.status.text = String(format: "Downloading Android 13 · %.0f%%", p * 100)
         }
     }
 
@@ -188,22 +206,16 @@ final class NeoController: UIViewController {
             guard let ctx, let text else { return }
             let me = Unmanaged<NeoController>.fromOpaque(ctx).takeUnretainedValue()
             let s = String(decoding: UnsafeBufferPointer(start: text, count: len), as: UTF8.self)
-            DispatchQueue.main.async { me.status.text = "Installing: \(s)" }
             me.append("[install] \(s)\n")
         }, ctx)
         try? fm.removeItem(at: zip)
         DispatchQueue.main.async {
-            self.timer?.invalidate()
-            self.button.isEnabled = true
-            self.status.text = rc == 0 ? "Installed." : "Install failed (see log)."
-            self.refreshButton()
-            if rc == 0 { self.boot() }
+            if rc == 0 { self.boot() } else { self.fail("Couldn’t install Android.") }
         }
     }
 
     private func boot() {
-        booted = true
-        refreshButton()
+        status.text = "Starting Android…"
         let overlay = Bundle.main.url(forResource: "rom-overlay", withExtension: nil)!
         let overlays = [overlay.appendingPathComponent("emu13").path, overlay.appendingPathComponent("common").path].joined(separator: ":")
         try? fm.createDirectory(at: state, withIntermediateDirectories: true)
@@ -229,14 +241,46 @@ final class NeoController: UIViewController {
             let me = Unmanaged<NeoController>.fromOpaque(ctx).takeUnretainedValue()
             me.append(String(decoding: UnsafeBufferPointer(start: text, count: len), as: UTF8.self))
         }, ctx)
-        status.text = rc == 0 ? "Booting Android… (console and logcat below)" : "Boot failed."
-        timer = Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { [weak self] _ in
-            let n = indroid_neo_instructions()
-            self?.status.text = String(format: "Booting Android… %.1f G guest instructions retired by exited threads", Double(n) / 1e9)
+        guard rc == 0 else { fail("Android couldn’t start."); return }
+        // Boot takes a couple of minutes on the interpreter: say how far along it is,
+        // and offer the log if no picture appears after a while.
+        let began = Date()
+        timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
+            guard let self, !self.sawFrame else { return }
+            let seconds = Int(Date().timeIntervalSince(began))
+            self.status.text = "Starting Android… \(seconds / 60):" + String(format: "%02d", seconds % 60)
+            if seconds > 240 { self.logButton.isHidden = false }
         }
     }
 }
 
+/// Console and logcat, for diagnosing a boot that doesn't reach the display.
+final class LogController: UIViewController {
+    private let textView = UITextView()
+    init(text: String) {
+        super.init(nibName: nil, bundle: nil)
+        textView.text = text
+        title = "Log"
+    }
+    required init?(coder: NSCoder) { fatalError() }
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view.backgroundColor = .systemBackground
+        textView.isEditable = false
+        textView.font = .monospacedSystemFont(ofSize: 11, weight: .regular)
+        textView.alwaysBounceVertical = true
+        textView.frame = view.bounds
+        textView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        view.addSubview(textView)
+        navigationItem.rightBarButtonItem = UIBarButtonItem(systemItem: .done, primaryAction: UIAction { [weak self] _ in
+            self?.dismiss(animated: true)
+        })
+    }
+    func update(_ text: String) {
+        textView.text = text
+        textView.scrollRangeToVisible(NSRange(location: (text as NSString).length, length: 0))
+    }
+}
 
 /// Shows Android's composed frames (1080x2340 RGBA) and turns UIKit touches into
 /// touchscreen events in the guest's pixel space.
