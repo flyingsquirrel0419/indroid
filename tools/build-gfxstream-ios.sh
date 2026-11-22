@@ -112,6 +112,15 @@ if vk in t and "indroid: Vulkan accessors" not in t:
     t = t.replace(vk, "#endif  // indroid: Vulkan accessors are not GLES-only\n" + vk + "#if GFXSTREAM_ENABLE_HOST_GLES\n", 1)
     h.write_text(t)
 
+# GLES-less compat stub: native window handles are pointers (FBNativeWindowType), and
+# FrameBuffer asks the (absent) GL emulation about formats.
+g = pathlib.Path(sys.argv[1]) / "host/GlesCompat.h"
+t = g.read_text()
+t = t.replace("typedef unsigned int EGLNativeWindowType;", "typedef void* EGLNativeWindowType;")
+if "isFormatSupported" not in t:
+    t = t.replace("    ~EmulationGl() {}\n", "    ~EmulationGl() {}\n    bool isFormatSupported(GLenum) { return false; }\n")
+g.write_text(t)
+
 # VK_MVK_macos_surface does not exist on iOS; the portable Metal surface extension does.
 for name in ("VkCommonOperations.cpp", "VkDecoderGlobalState.cpp"):
     f = pathlib.Path(sys.argv[1]) / "host/vulkan" / name
