@@ -2,11 +2,12 @@
 
 # indroid
 
-**Run Android on a stock iPhone. No JIT, no jailbreak.**
+**Real Android 13 on a stock iPhone. No JIT, no jailbreak.**
 
-Two engines in Rust: a Dalvik interpreter with a small Android framework that
-renders APKs as native UIKit views, and **neo**, an AArch64 interpreter plus a
-Linux-ABI kernel that boots the real, unmodified Android 13.
+Open the app and Android boots. indroid is an AArch64 interpreter plus a
+Linux-ABI kernel in Rust that runs the unmodified Android 13 system image.
+It also contains a smaller Dalvik engine that runs single APKs on a computer
+or as native UIKit views.
 
 [![CI](https://github.com/flyingsquirrel0419/indroid/actions/workflows/ci.yml/badge.svg)](https://github.com/flyingsquirrel0419/indroid/actions/workflows/ci.yml)
 [![iOS IPA](https://github.com/flyingsquirrel0419/indroid/actions/workflows/ios.yml/badge.svg)](https://github.com/flyingsquirrel0419/indroid/actions/workflows/ios.yml)
@@ -15,6 +16,31 @@ Linux-ABI kernel that boots the real, unmodified Android 13.
 </div>
 
 ---
+
+## Real Android 13 (neo)
+
+neo runs the unmodified Android 13 arm64 system image (Google's emulator
+image, downloaded from the public Android SDK repository) in user space:
+an AArch64 interpreter with a decoded block cache (`crates/a64`, ~55 M
+instructions/s) and a kernel that implements the Linux ABI Android needs
+(`crates/kernel`: processes, threads, futexes, signals, mmap, binder, ashmem,
+epoll, netlink, bpf, virtio-gpu, ...). `init` starts ~120 services, zygote
+forks `system_server`, and SurfaceFlinger, SystemUI and Launcher3 render with
+ANGLE on Vulkan through gfxstream:
+
+<p align="center">
+  <img src="docs/img/neo-bootanim.png" width="240" alt="Android 13 boot animation on indroid neo">
+  <img src="docs/img/neo-launcher.png" width="240" alt="Android 13 launcher home screen on indroid neo">
+</p>
+
+No code is generated at run time, so it fits iOS's rules. Status: the home
+screen above is from a Linux host (gfxstream on lavapipe). On iPhone the app
+downloads, installs and boots the image with console and logcat output; the
+on-device display (gfxstream on MoltenVK) and touch input are the next
+milestones, then speed (build-time AOT of hot ROM code). Boot takes ~160 s on
+the interpreter today. Details: [docs/NEO.md](docs/NEO.md).
+
+## The Dalvik engine: run a single APK
 
 ```text
 $ indroid run examples/todo.apk
@@ -49,29 +75,6 @@ template, built by Gradle with R8 (`AppCompatActivity`, Material 3 theme,
 Material Components code inside the APK is executed as-is, themes and styles
 resolve through `resources.arsc`, and `ConstraintLayout` from the APK lays the
 screen out. Kotlin apps work too (the Kotlin stdlib is just more bytecode).
-
-## New in 1.0: real Android 13 (neo)
-
-neo runs the unmodified Android 13 arm64 system image (Google's emulator
-image, downloaded from the public Android SDK repository) in user space:
-an AArch64 interpreter with a decoded block cache (`crates/a64`, ~55 M
-instructions/s) and a kernel that implements the Linux ABI Android needs
-(`crates/kernel`: processes, threads, futexes, signals, mmap, binder, ashmem,
-epoll, netlink, bpf, virtio-gpu, ...). `init` starts ~120 services, zygote
-forks `system_server`, and SurfaceFlinger, SystemUI and Launcher3 render with
-ANGLE on Vulkan through gfxstream:
-
-<p align="center">
-  <img src="docs/img/neo-bootanim.png" width="240" alt="Android 13 boot animation on indroid neo">
-  <img src="docs/img/neo-launcher.png" width="240" alt="Android 13 launcher home screen on indroid neo">
-</p>
-
-No code is generated at run time, so it fits iOS's rules. Status: the home
-screen above is from a Linux host (gfxstream on lavapipe). On iPhone the app
-downloads, installs and boots the image with console and logcat output; the
-on-device display (gfxstream on MoltenVK) and touch input are the next
-milestones, then speed (build-time AOT of hot ROM code). Boot takes ~160 s on
-the interpreter today. Details: [docs/NEO.md](docs/NEO.md).
 
 ## Why this is different
 
