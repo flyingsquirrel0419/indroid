@@ -112,6 +112,19 @@ if vk in t and "indroid: Vulkan accessors" not in t:
     t = t.replace(vk, "#endif  // indroid: Vulkan accessors are not GLES-only\n" + vk + "#if GFXSTREAM_ENABLE_HOST_GLES\n", 1)
     h.write_text(t)
 
+c = pathlib.Path(sys.argv[1]) / "host/FrameBuffer.cpp"
+t = c.read_text()
+fn = """VkEmulation& FrameBuffer::getEmulationVk() {
+    if (!m_emulationVk) {
+        GFXSTREAM_ABORT(FatalError(ABORT_REASON_OTHER)) << "GL/EGL emulation not enabled.";
+    }
+    return *m_emulationVk;
+}
+"""
+if fn in t and "indroid: getEmulationVk" not in t:
+    t = t.replace(fn, "#endif  // indroid: getEmulationVk is not GLES-only\n" + fn + "#if GFXSTREAM_ENABLE_HOST_GLES\n", 1)
+    c.write_text(t)
+
 # GLES-less compat stub: native window handles are pointers (FBNativeWindowType), and
 # FrameBuffer asks the (absent) GL emulation about formats.
 g = pathlib.Path(sys.argv[1]) / "host/GlesCompat.h"
@@ -157,7 +170,7 @@ c_args = ['-arch', 'arm64', '-isysroot', '$sdk', '-miphoneos-version-min=15.0']
 # Khronos EGL/GLES headers ship in the tree; no GL is linked, but the decoders include them.
 cpp_args = ['-arch', 'arm64', '-isysroot', '$sdk', '-miphoneos-version-min=15.0', '-I$gfx_src/common/opengl/include', '-DVK_USE_PLATFORM_METAL_EXT']
 c_link_args = ['-arch', 'arm64', '-isysroot', '$sdk', '-miphoneos-version-min=15.0']
-cpp_link_args = ['-arch', 'arm64', '-isysroot', '$sdk', '-miphoneos-version-min=15.0']
+cpp_link_args = ['-arch', 'arm64', '-isysroot', '$sdk', '-miphoneos-version-min=15.0', '-framework', 'Foundation', '-framework', 'CoreFoundation']
 pkg_config_path = ['$out/lib/pkgconfig']
 
 [host_machine]
