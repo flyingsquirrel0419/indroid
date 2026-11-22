@@ -40,6 +40,19 @@ GFX_PATCH_ONLY=1 tools/build-gfxstream.sh
 gfx_src=$(echo "$root"/src/gfxstream-*)
 aemu_src=$(echo "$root"/src/aemu-*)
 
+# iOS SDK compatibility patches for the (macOS-oriented) pinned sources. Idempotent.
+python3 - "$aemu_src" <<'PY_PATCH'
+import pathlib, sys
+root = pathlib.Path(sys.argv[1])
+p = root / "base/System.cpp"
+s = p.read_text()
+# libproc.h is not in the iOS SDK; the executable path comes from dyld instead.
+s = s.replace("#include <libproc.h>\n", "#include <mach-o/dyld.h>\n")
+s = s.replace("    proc_pidpath(pid, s, sizeof(s));\n",
+              "    (void)pid;\n    { uint32_t n = sizeof(s); if (_NSGetExecutablePath(s, &n) != 0) s[0] = '\\0'; }\n")
+p.write_text(s)
+PY_PATCH
+
 sdk=$(xcrun --sdk iphoneos --show-sdk-path)
 arch_flags="-arch arm64 -isysroot $sdk -miphoneos-version-min=15.0"
 
