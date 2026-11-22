@@ -1,0 +1,5 @@
+# indroid: goldfish-logcat forwards logcat to an emulator console (/dev/hvc1) and
+# its argument ${ro.boot.logcat} never exists here, so it exits at once and init
+# restarts it forever. `stop` marks it disabled, so class_start main skips it.
+on init
+    stop goldfish-logcat
