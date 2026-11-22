@@ -51,6 +51,30 @@ s = s.replace("#include <libproc.h>\n", "#include <mach-o/dyld.h>\n")
 s = s.replace("    proc_pidpath(pid, s, sizeof(s));\n",
               "    (void)pid;\n    { uint32_t n = sizeof(s); if (_NSGetExecutablePath(s, &n) != 0) s[0] = '\\0'; }\n")
 p.write_text(s)
+
+# system-native-mac.mm uses IOKit/AppKit (macOS only): keep the CPU-time helper, stub the rest.
+p = root / "base/system-native-mac.mm"
+s = p.read_text()
+if "indroid iOS" not in s:
+    start = s.index("#include <CoreFoundation/CoreFoundation.h>")
+    s = s[:start] + """// indroid iOS: IOKit/AppKit are unavailable; disk kind and dock icon are stubbed.
+#include <CoreFoundation/CoreFoundation.h>
+#import <Foundation/Foundation.h>
+""" + s[s.index("#include <mach/mach_init.h>"):]
+    a = s.index("Optional<DiskKind> nativeDiskKind")
+    b = s.index("}  // namespace base")
+    s = s[:a] + """Optional<DiskKind> nativeDiskKind(int) { return {}; }
+
+void hideDockIcon_macImpl(void) {}
+
+""" + s[b:]
+    # disableAppNap_macImpl uses NSProcessInfo, which exists on iOS.
+    p.write_text(s)
+
+p = root / "base/CMakeLists.txt"
+s = p.read_text()
+s = s.replace('"-framework Foundation" "-framework AppKit" "-framework IOKit"', '"-framework Foundation"')
+p.write_text(s)
 PY_PATCH
 
 sdk=$(xcrun --sdk iphoneos --show-sdk-path)
