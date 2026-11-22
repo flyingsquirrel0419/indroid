@@ -18,7 +18,16 @@ jobs:
         with:
           targets: aarch64-apple-ios,aarch64-apple-ios-sim
       - uses: Swatinem/rust-cache@v2
+      - run: brew install meson ninja cmake pkg-config
+      - name: Cache gfxstream + MoltenVK
+        uses: actions/cache@v4
+        with:
+          path: build/gfx-ios/out
+          key: gfx-ios-${{ hashFiles('tools/build-gfxstream.sh', 'tools/build-gfxstream-ios.sh', 'tools/gfxstream-*.py') }}
+      - run: tools/build-gfxstream-ios.sh
       - run: ios/build-ipa.sh
+        env:
+          REQUIRE_GFXSTREAM: '1'
       - uses: actions/upload-artifact@v4
         with:
           name: indroid.ipa
