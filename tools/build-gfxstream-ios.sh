@@ -77,6 +77,26 @@ s = s.replace('"-framework Foundation" "-framework AppKit" "-framework IOKit"', 
 p.write_text(s)
 PY_PATCH
 
+python3 - "$gfx_src" <<'PY_PATCH'
+import pathlib, sys
+root = pathlib.Path(sys.argv[1]) / "host/gl/gl-host-common"
+# macTouchOpenGL.m / IOKit GPU probing are macOS only; Vulkan-only iOS needs neither.
+stub = root / "opengl/NativeGpuInfo_ios.cpp"
+stub.write_text("""// indroid iOS: no GL stack to probe; MoltenVK is the only GPU path.
+#include "host-common/opengl/NativeGpuInfo.h"
+
+void getGpuInfoListNative(GpuInfoList*) {}
+
+bool isVulkanSafeToUseNative() { return true; }
+""")
+m = root / "meson.build"
+s = m.read_text()
+if "NativeGpuInfo_ios.cpp" not in s:
+    s = s.replace("if host_machine.system() == 'darwin'\n  files_lib_gl_host_common += files_gl_host_common_darwin",
+                  "if host_machine.system() == 'darwin' and host_machine.subsystem() == 'ios'\n  files_lib_gl_host_common += files('opengl/NativeGpuInfo_ios.cpp')\nelif host_machine.system() == 'darwin'\n  files_lib_gl_host_common += files_gl_host_common_darwin")
+    m.write_text(s)
+PY_PATCH
+
 sdk=$(xcrun --sdk iphoneos --show-sdk-path)
 arch_flags="-arch arm64 -isysroot $sdk -miphoneos-version-min=15.0"
 
