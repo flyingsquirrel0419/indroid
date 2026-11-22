@@ -14,6 +14,13 @@ final class NeoController: UIViewController {
     private var pendingFlush = false
     private var booted = false
     private var timer: Timer?
+    private let display = DisplayView()
+    private let overlay = UIView()
+    private let logButton = UIButton(type: .system)
+    private var framePending = false
+    private var latestFrame: (Int, Int, Data)?
+    private let frameLock = NSLock()
+    private var sawFrame = false
 
     private var base: URL { fm.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent("neo", isDirectory: true) }
     private var rom: URL { base.appendingPathComponent("rom13", isDirectory: true) }
@@ -31,11 +38,37 @@ final class NeoController: UIViewController {
         status.numberOfLines = 0
         button.titleLabel?.font = .preferredFont(forTextStyle: .headline)
         button.addTarget(self, action: #selector(primary), for: .touchUpInside)
+        display.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(display)
+        overlay.backgroundColor = .systemBackground
+        overlay.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(overlay)
+        logButton.setTitle("Log", for: .normal)
+        logButton.backgroundColor = UIColor.black.withAlphaComponent(0.4)
+        logButton.setTitleColor(.white, for: .normal)
+        logButton.layer.cornerRadius = 12
+        logButton.contentEdgeInsets = UIEdgeInsets(top: 4, left: 10, bottom: 4, right: 10)
+        logButton.isHidden = true
+        logButton.addTarget(self, action: #selector(toggleLog), for: .touchUpInside)
+        logButton.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(logButton)
+        NSLayoutConstraint.activate([
+            display.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            display.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            display.topAnchor.constraint(equalTo: view.topAnchor),
+            display.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            overlay.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            overlay.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            overlay.topAnchor.constraint(equalTo: view.topAnchor),
+            overlay.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            logButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -8),
+            logButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 2),
+        ])
         let stack = UIStackView(arrangedSubviews: [status, button, textView])
         stack.axis = .vertical
         stack.spacing = 8
         stack.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(stack)
+        overlay.addSubview(stack)
         NSLayoutConstraint.activate([
             stack.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 12),
             stack.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -12),
@@ -51,6 +84,40 @@ final class NeoController: UIViewController {
         guard !started else { return }
         started = true
         primary()
+    }
+
+    @objc private func toggleLog() { overlay.isHidden.toggle() }
+
+    /// Called on a renderer thread for every composed frame. Copies the pixels
+    /// and keeps only the newest one so a slow main thread never builds a backlog.
+    fileprivate func deliver(width: Int, height: Int, rgba: UnsafePointer<UInt8>) {
+        let data = Data(bytes: rgba, count: width * height * 4)
+        frameLock.lock()
+        latestFrame = (width, height, data)
+        let schedule = !framePending
+        framePending = true
+        frameLock.unlock()
+        guard schedule else { return }
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            self.frameLock.lock()
+            let frame = self.latestFrame
+            self.latestFrame = nil
+            self.framePending = false
+            self.frameLock.unlock()
+            guard let (w, h, data) = frame, let provider = CGDataProvider(data: data as CFData),
+                  let image = CGImage(width: w, height: h, bitsPerComponent: 8, bitsPerPixel: 32, bytesPerRow: w * 4,
+                                      space: CGColorSpaceCreateDeviceRGB(),
+                                      bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.noneSkipLast.rawValue),
+                                      provider: provider, decode: nil, shouldInterpolate: true, intent: .defaultIntent) else { return }
+            self.display.show(image)
+            if !self.sawFrame {
+                self.sawFrame = true
+                self.overlay.isHidden = true
+                self.logButton.isHidden = false
+                self.timer?.invalidate()
+            }
+        }
     }
 
     private func refreshButton() {
@@ -141,6 +208,17 @@ final class NeoController: UIViewController {
         let overlays = [overlay.appendingPathComponent("emu13").path, overlay.appendingPathComponent("common").path].joined(separator: ":")
         try? fm.createDirectory(at: state, withIntermediateDirectories: true)
         let ctx = Unmanaged.passUnretained(self).toOpaque()
+        indroid_neo_set_frame_callback({ ctx, w, h, rgba in
+            guard let ctx, let rgba else { return }
+            Unmanaged<NeoController>.fromOpaque(ctx).takeUnretainedValue().deliver(width: Int(w), height: Int(h), rgba: rgba)
+        }, ctx)
+        // GPU: the gfxstream renderer ships inside the app bundle (Frameworks/).
+        if let gpu = Bundle.main.privateFrameworksURL?.appendingPathComponent("libgfxstream_backend.dylib"),
+           fm.fileExists(atPath: gpu.path) {
+            setenv("INDROID_GFXSTREAM", gpu.path, 1)
+        } else {
+            append("[gpu] libgfxstream_backend.dylib is not bundled in this build: Android will boot without a display.\n")
+        }
         let rc = indroid_neo_boot(rom.path, state.path, overlays, nil, { ctx, text, len in
             guard let ctx, let text else { return }
             let me = Unmanaged<NeoController>.fromOpaque(ctx).takeUnretainedValue()
@@ -152,4 +230,63 @@ final class NeoController: UIViewController {
             self?.status.text = String(format: "Booting Android… %.1f G guest instructions retired by exited threads", Double(n) / 1e9)
         }
     }
+}
+
+
+/// Shows Android's composed frames (1080x2340 RGBA) and turns UIKit touches into
+/// touchscreen events in the guest's pixel space.
+final class DisplayView: UIView {
+    static let guestWidth: CGFloat = 1080
+    static let guestHeight: CGFloat = 2340
+    private var slots: [UITouch: Int] = [:]
+    private var nextTrackingID: Int32 = 1
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        backgroundColor = .black
+        isMultipleTouchEnabled = true
+        layer.contentsGravity = .resizeAspect
+        layer.magnificationFilter = .linear
+    }
+    required init?(coder: NSCoder) { fatalError() }
+
+    func show(_ image: CGImage) { layer.contents = image }
+
+    /// Where the guest screen sits inside the view (aspect fit).
+    private var screenRect: CGRect {
+        let scale = min(bounds.width / Self.guestWidth, bounds.height / Self.guestHeight)
+        let size = CGSize(width: Self.guestWidth * scale, height: Self.guestHeight * scale)
+        return CGRect(x: (bounds.width - size.width) / 2, y: (bounds.height - size.height) / 2, width: size.width, height: size.height)
+    }
+    private func guestPoint(_ t: UITouch) -> (Int32, Int32) {
+        let r = screenRect, p = t.location(in: self)
+        let x = max(0, min(1, (p.x - r.minX) / r.width)) * (Self.guestWidth - 1)
+        let y = max(0, min(1, (p.y - r.minY) / r.height)) * (Self.guestHeight - 1)
+        return (Int32(x), Int32(y))
+    }
+    private func send(_ touches: Set<UITouch>, begin: Bool = false) {
+        for t in touches {
+            guard let slot = slots[t] else { continue }
+            let (x, y) = guestPoint(t)
+            indroid_neo_touch(Int32(slot), slotIDs[slot], x, y)
+        }
+    }
+    private var slotIDs = [Int32](repeating: 0, count: 10)
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        for t in touches {
+            guard let slot = (0..<10).first(where: { !slots.values.contains($0) }) else { continue }
+            slots[t] = slot
+            slotIDs[slot] = nextTrackingID
+            nextTrackingID = nextTrackingID == Int32.max ? 1 : nextTrackingID + 1
+        }
+        send(touches)
+    }
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) { send(touches) }
+    private func lift(_ touches: Set<UITouch>) {
+        for t in touches {
+            if let slot = slots.removeValue(forKey: t) { indroid_neo_touch(Int32(slot), -1, 0, 0) }
+        }
+    }
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) { send(touches); lift(touches) }
+    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) { lift(touches) }
 }

@@ -254,9 +254,25 @@ unsafe extern "C" fn fence_trampoline(cookie: *mut libc::c_void, fence: *mut Fen
     let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| callback(value)));
 }
 
+/// Receives every composed frame: tightly packed RGBA8, `width * height * 4`
+/// bytes, valid only for the duration of the call.
+pub type FrameFn = extern "C" fn(ctx: *mut libc::c_void, width: u32, height: u32, rgba: *const u8);
+
+static FRAME_SINK: std::sync::Mutex<Option<(FrameFn, usize)>> = std::sync::Mutex::new(None);
+
+/// Route composed frames to `sink` (the host display). Pass `None` to stop.
+/// Call before the renderer starts.
+pub fn set_frame_sink(sink: Option<(FrameFn, *mut libc::c_void)>) {
+    *FRAME_SINK.lock().unwrap_or_else(|e| e.into_inner()) = sink.map(|(f, c)| (f, c as usize));
+}
+
 unsafe extern "C" fn dump_frame(width: u32, height: u32, pixels: *const u8) {
     if pixels.is_null() || width == 0 || height == 0 || width > 16384 || height > 16384 {
         return;
+    }
+    let sink = *FRAME_SINK.lock().unwrap_or_else(|e| e.into_inner());
+    if let Some((f, ctx)) = sink {
+        f(ctx as *mut libc::c_void, width, height, pixels);
     }
     let Some(path) = std::env::var_os("INDROID_FB_DUMP") else {
         return;
@@ -327,7 +343,11 @@ impl Renderer {
             Some(set_resolver) => unsafe { set_resolver(Some(puid_resolve)) },
             None => eprintln!("gfxstream backend has no indroid puid resolver hook"),
         }
-        if std::env::var_os("INDROID_FB_DUMP").is_some() {
+        let has_sink = FRAME_SINK
+            .lock()
+            .unwrap_or_else(|e| e.into_inner())
+            .is_some();
+        if has_sink || std::env::var_os("INDROID_FB_DUMP").is_some() {
             match api.set_frame_callback {
                 Some(set_callback) => unsafe { set_callback(Some(dump_frame)) },
                 None => eprintln!("gfxstream backend has no indroid frame-capture hook"),
