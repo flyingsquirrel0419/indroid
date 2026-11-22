@@ -104,6 +104,14 @@ t = m.read_text()
 if "indroid_empty.cpp" not in t:
     m.write_text(t.replace("files_lib_host_backend = files(\n)", "files_lib_host_backend = files('indroid_empty.cpp')"))
 
+# FrameBuffer.h wraps the Vulkan accessors in the GLES-only block; hoist them out.
+h = pathlib.Path(sys.argv[1]) / "host/FrameBuffer.h"
+t = h.read_text()
+vk = "    vk::VkEmulation& getEmulationVk();\n    bool hasEmulationVk() const { return m_emulationVk != nullptr; }\n"
+if vk in t and "indroid: Vulkan accessors" not in t:
+    t = t.replace(vk, "#endif  // indroid: Vulkan accessors are not GLES-only\n" + vk + "#if GFXSTREAM_ENABLE_HOST_GLES\n", 1)
+    h.write_text(t)
+
 # VK_MVK_macos_surface does not exist on iOS; the portable Metal surface extension does.
 for name in ("VkCommonOperations.cpp", "VkDecoderGlobalState.cpp"):
     f = pathlib.Path(sys.argv[1]) / "host/vulkan" / name
@@ -158,7 +166,7 @@ if [[ ! -f "$root/build-gfxstream/build.ninja" ]]; then
     meson setup "$root/build-gfxstream" "$gfx_src" --cross-file "$root/ios-cross.ini" \
         --prefix="$out" --libdir=lib -Dgfxstream-build=host -Ddecoders=vulkan,composer
 fi
-meson compile -C "$root/build-gfxstream"
+meson compile -C "$root/build-gfxstream" --ninja-args=-k0
 meson install -C "$root/build-gfxstream"
 
 # 5. Plain file name + @rpath install name; the app dlopens it from Frameworks/.
