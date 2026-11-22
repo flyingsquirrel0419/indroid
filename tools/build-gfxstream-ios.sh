@@ -96,6 +96,14 @@ if "NativeGpuInfo_ios.cpp" not in s:
                   "if host_machine.system() == 'darwin' and host_machine.subsystem() == 'ios'\n  files_lib_gl_host_common += files('opengl/NativeGpuInfo_ios.cpp')\nelif host_machine.system() == 'darwin'\n  files_lib_gl_host_common += files_gl_host_common_darwin")
     m.write_text(s)
 
+# host_backend has no sources; Apple's ar refuses to create an empty archive.
+b = pathlib.Path(sys.argv[1]) / "host/backend"
+(b / "indroid_empty.cpp").write_text("namespace indroid_empty { int placeholder = 0; }\n")
+m = b / "meson.build"
+t = m.read_text()
+if "indroid_empty.cpp" not in t:
+    m.write_text(t.replace("files_lib_host_backend = files(\n)", "files_lib_host_backend = files('indroid_empty.cpp')"))
+
 # VK_MVK_macos_surface does not exist on iOS; the portable Metal surface extension does.
 for name in ("VkCommonOperations.cpp", "VkDecoderGlobalState.cpp"):
     f = pathlib.Path(sys.argv[1]) / "host/vulkan" / name
