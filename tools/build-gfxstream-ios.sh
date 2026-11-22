@@ -95,6 +95,12 @@ if "NativeGpuInfo_ios.cpp" not in s:
     s = s.replace("if host_machine.system() == 'darwin'\n  files_lib_gl_host_common += files_gl_host_common_darwin",
                   "if host_machine.system() == 'darwin' and host_machine.subsystem() == 'ios'\n  files_lib_gl_host_common += files('opengl/NativeGpuInfo_ios.cpp')\nelif host_machine.system() == 'darwin'\n  files_lib_gl_host_common += files_gl_host_common_darwin")
     m.write_text(s)
+
+# VK_MVK_macos_surface does not exist on iOS; the portable Metal surface extension does.
+for name in ("VkCommonOperations.cpp", "VkDecoderGlobalState.cpp"):
+    f = pathlib.Path(sys.argv[1]) / "host/vulkan" / name
+    t = f.read_text()
+    f.write_text(t.replace("VK_MVK_MACOS_SURFACE_EXTENSION_NAME", '"VK_EXT_metal_surface"'))
 PY_PATCH
 
 sdk=$(xcrun --sdk iphoneos --show-sdk-path)
