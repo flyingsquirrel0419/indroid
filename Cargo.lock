@@ -160,6 +160,7 @@ name = "indroid-ffi"
 version = "1.0.0"
 dependencies = [
  "indroid-apk",
+ "indroid-gpu",
  "indroid-kernel",
  "indroid-rom",
  "indroid-vm",

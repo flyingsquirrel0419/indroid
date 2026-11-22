@@ -55,6 +55,10 @@ int32_t indroid_neo_install(const char *zip, const char *out, const char *work, 
 /* Boots /system/bin/init from `rom`; `overlays` is ':'-separated; `cmdline`
    may be NULL. Console + logcat lines are passed to `log`. 0 = started. */
 int32_t indroid_neo_boot(const char *rom, const char *state, const char *overlays, const char *cmdline, IndroidNeoTextFn log, void *ctx);
+/* Display: tightly packed RGBA8 frames (width*height*4 bytes), valid only during
+ * the call, delivered on a renderer thread. Register before indroid_neo_boot. */
+typedef void (*IndroidNeoFrameFn)(void *ctx, uint32_t width, uint32_t height, const uint8_t *rgba);
+void indroid_neo_set_frame_callback(IndroidNeoFrameFn frame, void *ctx);
 void indroid_neo_touch(int32_t slot, int32_t id, int32_t x, int32_t y);
 uint64_t indroid_neo_instructions(void);
 
