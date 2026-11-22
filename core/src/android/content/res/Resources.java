@@ -42,13 +42,13 @@ public class Resources {
         public int getExplicitStyle(AttributeSet set) { return set == null ? 0 : set.getStyleAttribute(); }
 
         /** Theme attribute value with ?attr chains followed (null if unset). */
-        public String idoridAttr(int attr) {
+        public String indroidAttr(int attr) {
             String v = attrs.get(Integer.valueOf(attr));
             for (int guard = 0; guard < 16 && v != null && VMValue.kind(v) == 'a'; guard++) v = attrs.get(Integer.valueOf(VMValue.intOf(v, 0)));
             return v != null && VMValue.kind(v) == 'a' ? null : v;
         }
         public boolean resolveAttribute(int resid, TypedValue out, boolean resolveRefs) {
-            String v = idoridAttr(resid);
+            String v = indroidAttr(resid);
             if (v == null) return false;
             fillValue(v, out, resolveRefs);
             return true;
@@ -64,19 +64,19 @@ public class Resources {
             String[] values = new String[wanted.length];
             Map<Integer, String> xml = new HashMap<Integer, String>();
             int explicitStyle = 0;
-            if (set instanceof VMXmlParser) set = ((VMXmlParser) set).idoridAttrs();
+            if (set instanceof VMXmlParser) set = ((VMXmlParser) set).indroidAttrs();
             if (set instanceof android.view.XmlAttrs) {
                 android.view.XmlAttrs x = (android.view.XmlAttrs) set;
                 for (int i = 0; i < x.getAttributeCount(); i++) {
                     int id = x.getAttributeNameResource(i);
-                    if (id != 0) xml.put(Integer.valueOf(id), x.idoridRawValue(i));
+                    if (id != 0) xml.put(Integer.valueOf(id), x.indroidRawValue(i));
                 }
                 explicitStyle = x.getStyleAttribute();
             }
             Map<Integer, String> styleAttr = explicitStyle != 0 ? styleMap(explicitStyle) : null;
             Map<Integer, String> defAttr = null;
             if (defStyleAttr != 0) {
-                String ref = idoridAttr(defStyleAttr);
+                String ref = indroidAttr(defStyleAttr);
                 if (ref != null && VMValue.kind(ref) == 'r') defAttr = styleMap(VMValue.intOf(ref, 0));
             }
             Map<Integer, String> defRes = defAttr == null && defStyleRes != 0 ? styleMap(defStyleRes) : null;
@@ -137,7 +137,7 @@ public class Resources {
 
     private static NotFoundException nf(int id) { return new NotFoundException("Resource ID #0x" + Integer.toHexString(id)); }
 
-    /** idorid: encoded value of a resource, following references to a primitive or file. */
+    /** indroid: encoded value of a resource, following references to a primitive or file. */
     private static final String MISSING = new String("\u0000missing");
     private final HashMap<Integer, String> valueCache = new HashMap<Integer, String>();
     private final HashMap<Integer, String[]> styleItemsCache = new HashMap<Integer, String[]>();
@@ -149,16 +149,16 @@ public class Resources {
         styleItemsCache.put(k, items);
         return items;
     }
-    public String idoridValue(int id) {
+    public String indroidValue(int id) {
         if (id == 0) return null;
         Integer k = Integer.valueOf(id);
         String c = valueCache.get(k);
         if (c != null) return c == MISSING ? null : c;
-        String v = idoridValueUncached(id);
+        String v = indroidValueUncached(id);
         valueCache.put(k, v == null ? MISSING : v);
         return v;
     }
-    private String idoridValueUncached(int id) {
+    private String indroidValueUncached(int id) {
         String v = nativeValue(id);
         if (v == null && (id >>> 24) == 1) {
             // framework files (drawables, layouts, anims) are not bundled: expose them as placeholders
@@ -168,14 +168,14 @@ public class Resources {
         }
         return v;
     }
-    /** idorid: transparent stand-in for framework drawables we do not bundle. */
+    /** indroid: transparent stand-in for framework drawables we do not bundle. */
     static Drawable placeholder() { return new VMPlaceholderDrawable(); }
 
     void fillValue(String v, TypedValue out, boolean resolveRefs) {
         char k = VMValue.kind(v);
         if (k == 'r' && resolveRefs) {
             int id = VMValue.intOf(v, 0);
-            String r = idoridValue(id);
+            String r = indroidValue(id);
             if (r != null && VMValue.kind(r) != 'r') { fillValue(r, out, false); out.resourceId = id; return; }
         }
         out.string = null; out.resourceId = 0; out.data = 0; out.assetCookie = 0;
@@ -223,35 +223,35 @@ public class Resources {
     public CharSequence getQuantityText(int id, int q) { return getString(id); }
     public int getColor(int id) { return getColor(id, null); }
     public int getColor(int id, Theme t) {
-        String v = idoridValue(id);
+        String v = indroidValue(id);
         if (v == null) throw nf(id);
-        if (VMValue.kind(v) == 'p') { ColorStateList c = ColorStateList.idoridInflate(this, VMValue.body(v), t); return c == null ? 0 : c.getDefaultColor(); }
+        if (VMValue.kind(v) == 'p') { ColorStateList c = ColorStateList.indroidInflate(this, VMValue.body(v), t); return c == null ? 0 : c.getDefaultColor(); }
         return VMValue.intOf(v, 0);
     }
     public ColorStateList getColorStateList(int id) { return getColorStateList(id, null); }
     public ColorStateList getColorStateList(int id, Theme t) {
-        String v = idoridValue(id);
+        String v = indroidValue(id);
         if (v == null) throw nf(id);
-        if (VMValue.kind(v) == 'p') { ColorStateList c = ColorStateList.idoridInflate(this, VMValue.body(v), t); if (c != null) return c; }
+        if (VMValue.kind(v) == 'p') { ColorStateList c = ColorStateList.indroidInflate(this, VMValue.body(v), t); if (c != null) return c; }
         return ColorStateList.valueOf(VMValue.intOf(v, 0));
     }
-    public int getInteger(int id) { String v = idoridValue(id); if (v == null) throw nf(id); return VMValue.intOf(v, 0); }
-    public boolean getBoolean(int id) { String v = idoridValue(id); if (v == null) throw nf(id); return VMValue.boolOf(v, false); }
-    public float getFloat(int id) { String v = idoridValue(id); if (v == null) throw nf(id); return VMValue.floatOf(v, 0); }
-    public float getFraction(int id, int base, int pbase) { String v = idoridValue(id); if (v == null) throw nf(id); return VMValue.fraction(v, base, pbase, 0); }
-    public float getDimension(int id) { String v = idoridValue(id); if (v == null) throw nf(id); return VMValue.dimension(v, 0); }
+    public int getInteger(int id) { String v = indroidValue(id); if (v == null) throw nf(id); return VMValue.intOf(v, 0); }
+    public boolean getBoolean(int id) { String v = indroidValue(id); if (v == null) throw nf(id); return VMValue.boolOf(v, false); }
+    public float getFloat(int id) { String v = indroidValue(id); if (v == null) throw nf(id); return VMValue.floatOf(v, 0); }
+    public float getFraction(int id, int base, int pbase) { String v = indroidValue(id); if (v == null) throw nf(id); return VMValue.fraction(v, base, pbase, 0); }
+    public float getDimension(int id) { String v = indroidValue(id); if (v == null) throw nf(id); return VMValue.dimension(v, 0); }
     public int getDimensionPixelSize(int id) { float f = getDimension(id); int r = (int) (f >= 0 ? f + 0.5f : f - 0.5f); return r != 0 ? r : f == 0 ? 0 : f > 0 ? 1 : -1; }
     public int getDimensionPixelOffset(int id) { return (int) getDimension(id); }
     public Drawable getDrawable(int id) { return getDrawable(id, null); }
     public Drawable getDrawable(int id, Theme t) {
-        String v = idoridValue(id);
+        String v = indroidValue(id);
         if (v == null) throw nf(id);
         Drawable d = drawableFor(id, v, t);
         return d != null ? d : placeholder();
     }
     public Drawable getDrawableForDensity(int id, int density) { return getDrawable(id); }
     public Drawable getDrawableForDensity(int id, int density, Theme t) { return getDrawable(id, t); }
-    /** idorid: drawable for an encoded value (color, bitmap file, or drawable XML). */
+    /** indroid: drawable for an encoded value (color, bitmap file, or drawable XML). */
     public Drawable drawableFor(int id, String v, Theme t) {
         // Framework drawable files (button/edit text chrome) are not bundled: let the host draw native chrome.
         if ((id >>> 24) == 1 && VMValue.kind(v) != 'c' && VMValue.kind(v) != 'i') return null;
@@ -267,7 +267,7 @@ public class Resources {
         }
     }
     public void getValue(int id, TypedValue out, boolean resolveRefs) {
-        String v = idoridValue(id);
+        String v = indroidValue(id);
         if (v == null) throw nf(id);
         fillValue(v, out, resolveRefs);
         if (out.resourceId == 0) out.resourceId = id;
@@ -292,15 +292,15 @@ public class Resources {
     public XmlResourceParser getXml(int id) { return xmlParser(id); }
     public XmlResourceParser getAnimation(int id) { return xmlParser(id); }
     private XmlResourceParser xmlParser(int id) {
-        String v = idoridValue(id);
+        String v = indroidValue(id);
         if (v == null || VMValue.kind(v) != 'p') throw nf(id);
         String src = nativeXml(VMValue.body(v));
         if (src == null) throw nf(id);
         return new VMXmlParser(src, null);
     }
     public android.graphics.Typeface getFont(int id) { return android.graphics.Typeface.DEFAULT; }
-    /** idorid: serialized layout tree for LayoutInflater. */
+    /** indroid: serialized layout tree for LayoutInflater. */
     public String getLayoutSource(int id) { String s = nativeLayout(id); if (s == null) throw nf(id); return s; }
-    /** idorid: serialized binary XML file (res/color, res/drawable, res/xml). */
-    public String idoridXml(String path) { return nativeXml(path); }
+    /** indroid: serialized binary XML file (res/color, res/drawable, res/xml). */
+    public String indroidXml(String path) { return nativeXml(path); }
 }

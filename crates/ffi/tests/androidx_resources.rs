@@ -1,4 +1,4 @@
-use idorid_ffi::App;
+use indroid_ffi::App;
 
 #[test]
 fn androidx_theme_contains_app_and_framework_attributes() {
@@ -7,7 +7,7 @@ fn androidx_theme_contains_app_and_framework_attributes() {
         env!("CARGO_MANIFEST_DIR")
     ))
     .unwrap();
-    let archive = idorid_apk::Apk::open(apk.clone()).unwrap();
+    let archive = indroid_apk::Apk::open(apk.clone()).unwrap();
     let app = App::load(apk, false).unwrap();
     let theme = *app.vm.manifest_themes.get("").expect("application theme");
     let resources = app.vm.resources.as_ref().unwrap();

@@ -1216,7 +1216,7 @@ fn recv(ctx: &Ctx, nr: u64, a: [u64; 6]) -> Result<i64> {
 }
 
 static LOGCAT: std::sync::LazyLock<bool> =
-    std::sync::LazyLock::new(|| std::env::var_os("IDORID_LOGCAT").is_some());
+    std::sync::LazyLock::new(|| std::env::var_os("INDROID_LOGCAT").is_some());
 
 /// Prints a logd write packet (android_log_header_t + prio/tag/msg) to stderr.
 fn mirror_log(data: &[u8], pid: i32) {

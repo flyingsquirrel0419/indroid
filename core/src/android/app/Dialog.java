@@ -36,11 +36,11 @@ public class Dialog implements DialogInterface {
     public void cancel() { if (onCancel != null) onCancel.onCancel(this); dismiss(); }
     public void hide() { dismiss(); }
     public android.view.Window getWindow() { return new android.view.Window(); }
-    /** idorid: host button press (-1 positive, -2 negative, -3 neutral, >= 0 list item). */
-    void idoridButton(int which) { dismiss(); }
-    void idoridJson(StringBuilder sb) {
+    /** indroid: host button press (-1 positive, -2 negative, -3 neutral, >= 0 list item). */
+    void indroidButton(int which) { dismiss(); }
+    void indroidJson(StringBuilder sb) {
         sb.append("{\"title\":"); android.view.Json.str(sb, title);
-        if (content != null) { sb.append(",\"content\":"); content.idoridJson(sb); }
+        if (content != null) { sb.append(",\"content\":"); content.indroidJson(sb); }
         sb.append(",\"cancelable\":").append(cancelable);
         sb.append('}');
     }

@@ -1,6 +1,6 @@
 <div align="center">
 
-# idorid
+# indroid
 
 **Run Android on a stock iPhone. No JIT, no jailbreak.**
 
@@ -8,8 +8,8 @@ Two engines in Rust: a Dalvik interpreter with a small Android framework that
 renders APKs as native UIKit views, and **neo**, an AArch64 interpreter plus a
 Linux-ABI kernel that boots the real, unmodified Android 13.
 
-[![CI](https://github.com/flyingsquirrel0419/idorid/actions/workflows/ci.yml/badge.svg)](https://github.com/flyingsquirrel0419/idorid/actions/workflows/ci.yml)
-[![iOS IPA](https://github.com/flyingsquirrel0419/idorid/actions/workflows/ios.yml/badge.svg)](https://github.com/flyingsquirrel0419/idorid/actions/workflows/ios.yml)
+[![CI](https://github.com/flyingsquirrel0419/indroid/actions/workflows/ci.yml/badge.svg)](https://github.com/flyingsquirrel0419/indroid/actions/workflows/ci.yml)
+[![iOS IPA](https://github.com/flyingsquirrel0419/indroid/actions/workflows/ios.yml/badge.svg)](https://github.com/flyingsquirrel0419/indroid/actions/workflows/ios.yml)
 ![License](https://img.shields.io/badge/license-Apache--2.0-blue)
 
 </div>
@@ -17,8 +17,8 @@ Linux-ABI kernel that boots the real, unmodified Android 13.
 ---
 
 ```text
-$ idorid run examples/todo.apk
-[idorid] loaded dev.idorid.todo in 1.0ms
+$ indroid run examples/todo.apk
+[indroid] loaded dev.indroid.todo in 1.0ms
 == Todo (Android) ==
 #1 FrameLayout
   #2 LinearLayout
@@ -31,10 +31,10 @@ $ idorid run examples/todo.apk
       #9 Spinner
       #10 CheckBox "Urgent only" checked=false
     #12 ScrollView
-        #17 TextView "🔥 Try idorid on an iPhone" [clickable]
+        #17 TextView "🔥 Try indroid on an iPhone" [clickable]
         #18 TextView "• Star the repo" [clickable]
     #13 Button "About"
-[idorid] launch 7.6ms, 143 classes, 1002 objects, heap 61 KB
+[indroid] launch 7.6ms, 143 classes, 1002 objects, heap 61 KB
 ```
 
 That is an **unmodified APK** built with the stock Android SDK (`aapt2` + `d8`):
@@ -62,8 +62,8 @@ forks `system_server`, and SurfaceFlinger, SystemUI and Launcher3 render with
 ANGLE on Vulkan through gfxstream:
 
 <p align="center">
-  <img src="docs/img/neo-bootanim.png" width="240" alt="Android 13 boot animation on idorid neo">
-  <img src="docs/img/neo-launcher.png" width="240" alt="Android 13 launcher home screen on idorid neo">
+  <img src="docs/img/neo-bootanim.png" width="240" alt="Android 13 boot animation on indroid neo">
+  <img src="docs/img/neo-launcher.png" width="240" alt="Android 13 launcher home screen on indroid neo">
 </p>
 
 No code is generated at run time, so it fits iOS's rules. Status: the home
@@ -79,11 +79,11 @@ iOS does not let ordinary apps create executable memory. Every Android-on-iOS
 attempt so far either emulates a whole ARM machine and needs JIT (StikDebug,
 debugger tricks, iOS-version roulette) or is not open source.
 
-idorid takes the other road:
+indroid takes the other road:
 
 The APK runtime takes a different road from emulators:
 
-| | Full-system emulators | **idorid APK runtime** |
+| | Full-system emulators | **indroid APK runtime** |
 |---|---|---|
 | Needs JIT / debugger attach | usually | **never**: only signed code runs; bytecode is data |
 | Boots Android | yes (seconds to minutes, GBs) | **no**: an app starts in milliseconds |
@@ -97,10 +97,10 @@ The APK runtime takes a different road from emulators:
 APK ──zip──▶ classes*.dex (zero-copy)        AndroidManifest.xml / resources.arsc / res/layout/*.xml
                    │                                         │ binary XML (AXML) + resource table
                    ▼                                         ▼
-     idorid-dex: zero-copy DEX parser          idorid-apk: launcher activity, strings, layouts
+     indroid-dex: zero-copy DEX parser          indroid-apk: launcher activity, strings, layouts
                    │
                    ▼
-     idorid-vm:  non-recursive interpreter (all ~220 Dalvik opcodes)
+     indroid-vm:  non-recursive interpreter (all ~220 Dalvik opcodes)
                  · dense jump-table dispatch, monomorphic inline caches
                  · load-time bytecode verifier → unchecked register access
                  · 32-bit object handles, compact Latin-1/UTF-16 strings
@@ -110,8 +110,8 @@ APK ──zip──▶ classes*.dex (zero-copy)        AndroidManifest.xml / res
                    ▼
      Android measure/layout in Java (real LinearLayout, RelativeLayout, ConstraintLayout from the APK, ...)
                    │
-     UI tree + frames (JSON) ──▶ idorid-ffi (C ABI) ──▶ Swift/UIKit host on iPhone
-                    └─▶ idorid-cli (headless; used by tests)
+     UI tree + frames (JSON) ──▶ indroid-ffi (C ABI) ──▶ Swift/UIKit host on iPhone
+                    └─▶ indroid-cli (headless; used by tests)
 ```
 
 * **No AOSP framework.** Booting `framework.jar` would drag in thousands of JNI
@@ -121,7 +121,7 @@ APK ──zip──▶ classes*.dex (zero-copy)        AndroidManifest.xml / res
   written in plain Java and compiled to `core.dex`, which is embedded in the
   binary.
 * **Correctness by differential testing.** Every program in `tests/java` is run
-  on the host JVM and on idorid, and the outputs must match byte for byte
+  on the host JVM and on indroid, and the outputs must match byte for byte
   (`tests/oracle.sh`). Real APKs are driven end to end in
   `crates/ffi/tests/apps.rs`.
 
@@ -161,8 +161,8 @@ with touch, real touch dispatch (`onInterceptTouchEvent`), `ValueAnimator`,
 **Not yet:** native `.so` libraries (JNI), Jetpack Compose, networking,
 files, databases, sound, sensors, real threads (threads run cooperatively),
 WebView. Apps that need these will start and then hit a clear error. See the
-[roadmap](#roadmap). `idorid missing app.apk` lists every framework API an app
-references that idorid does not provide yet.
+[roadmap](#roadmap). `indroid missing app.apk` lists every framework API an app
+references that indroid does not provide yet.
 
 Native libraries are the hard wall: they are ARM64 ELF code, and iOS will only
 execute code signed into the app. Future options are build-time static
@@ -170,21 +170,18 @@ translation into the IPA, or an ARM64 interpreter. Neither is a weekend project.
 
 ## Install on iPhone
 
-1. Download `idorid.ipa` from the latest
-   [release](https://github.com/flyingsquirrel0419/idorid/releases) (or from the
-   artifacts of the latest [iOS workflow run](https://github.com/flyingsquirrel0419/idorid/actions/workflows/ios.yml)).
+1. Download `indroid.ipa` from the latest
+   [release](https://github.com/flyingsquirrel0419/indroid/releases) (or from the
+   artifacts of the latest [iOS workflow run](https://github.com/flyingsquirrel0419/indroid/actions/workflows/ios.yml)).
 2. Sideload it with SideStore, AltStore, Sideloadly or TrollStore. It is
    unsigned; your tool signs it with your Apple ID. No JIT enabler is needed.
-3. Open idorid, tap **+**, pick an `.apk` from Files (or share an APK to
-   idorid), and tap it to run.
-4. Experimental: **Android 13 (neo)** downloads Google's Android 13 system
-   image (~670 MB) on the device, installs it and boots it, showing the console
-   and logcat (no display on the phone yet).
+3. Open indroid. Android 13 starts right away: the first launch downloads
+   Google's Android 13 system image (~670 MB) and installs it, every launch
+   after that boots straight into it. The app shows the console and logcat
+   while Android comes up (no display on the phone yet; see the roadmap).
 
-The app ships with demos: Todo (views, dialogs, preferences), Paint (Canvas
-custom view, touch, animation), Calc (Kotlin), Hello AndroidX (the Android
-Studio template), Planets (AndroidX showcase: RecyclerView, MaterialToolbar,
-TextInputLayout, chips, switches, cards, a second activity).
+To run a single APK without booting Android, use the command-line Dalvik
+runtime on a computer: `indroid run app.apk` (see [Build](#build)).
 
 ## Build
 
@@ -193,15 +190,15 @@ Requirements: Rust (stable), JDK 17+, Android SDK build-tools (for `d8` and
 
 ```sh
 cargo build --release                                   # VM, CLI, C library
-./target/release/idorid run examples/todo.apk           # interactive: click <id>, type <id> <text>, back, log
-./target/release/idorid main app.dex com.example.Main   # run a plain main()
+./target/release/indroid run examples/todo.apk           # interactive: click <id>, type <id> <text>, back, log
+./target/release/indroid main app.dex com.example.Main   # run a plain main()
 
 tools/build-core.sh                                     # rebuild crates/vm/core.dex from core/src
 tools/build-apk.sh examples/todo examples/todo.apk      # build an example APK with the stock SDK
-tests/oracle.sh                                         # JVM vs idorid differential tests
+tests/oracle.sh                                         # JVM vs indroid differential tests
 cargo test --workspace
 
-ios/build-ipa.sh                                        # on macOS: build/idorid.ipa (unsigned)
+ios/build-ipa.sh                                        # on macOS: build/indroid.ipa (unsigned)
 ```
 
 ## Performance
@@ -210,7 +207,7 @@ Micro-benchmarks (`tests/bench/run.sh`, x86-64 Linux). The comparison is
 HotSpot's `-Xint` mode, which is a template interpreter generated as machine
 code at startup, a technique iOS forbids:
 
-| benchmark | idorid | JVM `-Xint` |
+| benchmark | indroid | JVM `-Xint` |
 |---|---:|---:|
 | `fib(27)` | 35 ms | 15 ms |
 | 10M-iteration arithmetic loop | 301 ms | 150 ms |
@@ -244,8 +241,8 @@ for the examples.
 | `crates/dex` | DEX parser |
 | `crates/vm` | interpreter, heap/GC, class loader, natives |
 | `crates/apk` | APK, binary XML, resources.arsc |
-| `crates/ffi` | `App` driver + C ABI (`include/idorid.h`) |
-| `crates/cli` | `idorid` command-line runner (`idorid neo` boots Android) |
+| `crates/ffi` | `App` driver + C ABI (`include/indroid.h`) |
+| `crates/cli` | `indroid` command-line runner (`indroid neo` boots Android) |
 | `crates/a64` | neo: AArch64 interpreter |
 | `crates/kernel` | neo: Linux ABI (processes, binder, virtio-gpu, ...) |
 | `crates/gpu` | neo: gfxstream renderer binding |
@@ -260,14 +257,14 @@ for the examples.
 ## Contributing
 
 The fastest way to help is to **try an APK and open an issue with the log**
-(the Log button in the app, or `idorid run app.apk` then `log`). Missing
+(the Log button in the app, or `indroid run app.apk` then `log`). Missing
 framework APIs are usually small, self-contained Java additions in
 `core/src/android`.
 
 ## Credits
 
 Built by a human with Claude Code and OpenAI Codex (`gpt-6.1-terra`) working as
-pair programmers. idorid re-implements Android APIs from their public
+pair programmers. indroid re-implements Android APIs from their public
 documentation. The only AOSP-derived data is a trimmed copy of the framework
 resource table (`crates/apk/framework-res.bin`, Apache-2.0), used to resolve
 `android:` themes and attributes. neo boots Google's Android system image, which

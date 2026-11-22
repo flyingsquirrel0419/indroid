@@ -2,8 +2,8 @@ use std::process::Command;
 use std::sync::{Arc, Mutex};
 
 struct Fake;
-impl idorid_kernel::virtgpu::GpuBackend for Fake {
-    fn capset(&self, id: u32, version: u32) -> idorid_kernel::vfs::Result<Vec<u8>> {
+impl indroid_kernel::virtgpu::GpuBackend for Fake {
+    fn capset(&self, id: u32, version: u32) -> indroid_kernel::vfs::Result<Vec<u8>> {
         assert_eq!((id, version), (3, 0));
         Ok(b"fake\0".to_vec())
     }
@@ -26,7 +26,7 @@ fn discovery_ioctls() {
     }
     let output = Arc::new(Mutex::new(Vec::new()));
     let out = output.clone();
-    let k = idorid_kernel::Kernel::new(idorid_kernel::Config {
+    let k = indroid_kernel::Kernel::new(indroid_kernel::Config {
         rom,
         state: root.join("state"),
         overlays: vec![],

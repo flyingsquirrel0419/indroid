@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Extracts SELinux labels (security.selinux xattrs) of every file in the
-ROM's APEX payloads into <rom>/.idorid-labels ("<guest path>\t<label>").
+ROM's APEX payloads into <rom>/.indroid-labels ("<guest path>\t<label>").
 APEX contents are labeled inside their ext4 payload, not by file_contexts.
 Needs: unzip, debugfs."""
 import os, subprocess, sys, tempfile, zipfile
@@ -41,4 +41,4 @@ for f in sorted(os.listdir(apexdir)):
             g = '/apex/%s%s' % (name, '' if p == '/' else p)
             out.append('%s\t%s' % (g, l))
         print(name, len(labels), file=sys.stderr)
-open(os.path.join(rom, '.idorid-labels'), 'w').write('\n'.join(out) + '\n')
+open(os.path.join(rom, '.indroid-labels'), 'w').write('\n'.join(out) + '\n')

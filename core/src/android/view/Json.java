@@ -1,5 +1,5 @@
 package android.view;
-/** idorid: tiny JSON writer for the host UI tree. */
+/** indroid: tiny JSON writer for the host UI tree. */
 public final class Json {
     private Json() {}
     public static void str(StringBuilder sb, CharSequence s) {

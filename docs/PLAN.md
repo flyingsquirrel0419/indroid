@@ -1,4 +1,4 @@
-# idorid — plan
+# indroid — plan
 
 Goal: run Android apps (APK) on a stock iPhone **without JIT**: no executable
 memory, no dynamic codegen. Everything that executes is either code signed in
@@ -21,27 +21,27 @@ low memory.
 APK ──zip──▶ classes*.dex (mmap/borrowed)   AndroidManifest.xml (AXML)
                    │                               │ launcher activity
                    ▼                               ▼
-     idorid-dex: zero-copy parser      idorid-apk: zip + AXML + arsc
+     indroid-dex: zero-copy parser      indroid-apk: zip + AXML + arsc
                    │
                    ▼
-     idorid-vm: lazy class linking, switch interpreter over 32-bit
+     indroid-vm: lazy class linking, switch interpreter over 32-bit
                 register slots, 32-bit object handles, precise-heap /
                 conservative-frame mark-sweep GC, Rust natives
                    │  core.dex (java.lang / java.util / android.* shim)
                    ▼
-     UI tree (view id, type, props)  ──▶ idorid-ffi (C ABI) ──▶ iOS UIKit host
-                                     └─▶ idorid-cli (headless, tests)
+     UI tree (view id, type, props)  ──▶ indroid-ffi (C ABI) ──▶ iOS UIKit host
+                                     └─▶ indroid-cli (headless, tests)
 ```
 
 Crates:
 
 | crate | role |
 |---|---|
-| `idorid-dex` | DEX parser: header, ids, class data, code items, try/catch, encoded values, MUTF-8 |
-| `idorid-vm` | interpreter, heap/GC, class loader, natives, UI bridge |
-| `idorid-apk` | APK zip reading, binary XML (AndroidManifest/layouts), resources.arsc (strings/layouts) |
-| `idorid-ffi` | C ABI for the iOS host (`include/idorid.h`) |
-| `idorid-cli` | `idorid run app.apk` / `idorid dex file.dex` headless runner |
+| `indroid-dex` | DEX parser: header, ids, class data, code items, try/catch, encoded values, MUTF-8 |
+| `indroid-vm` | interpreter, heap/GC, class loader, natives, UI bridge |
+| `indroid-apk` | APK zip reading, binary XML (AndroidManifest/layouts), resources.arsc (strings/layouts) |
+| `indroid-ffi` | C ABI for the iOS host (`include/indroid.h`) |
+| `indroid-cli` | `indroid run app.apk` / `indroid dex file.dex` headless runner |
 
 ## Memory / speed choices
 
@@ -57,24 +57,24 @@ Crates:
 ## FFI contract (iOS host ⇄ Rust)
 
 ```c
-typedef struct IdoridVm IdoridVm;
-// Load an APK. On failure returns NULL and sets *err (free with idorid_string_free).
-IdoridVm *idorid_vm_new(const uint8_t *apk, size_t len, char **err);
+typedef struct IndroidVm IndroidVm;
+// Load an APK. On failure returns NULL and sets *err (free with indroid_string_free).
+IndroidVm *indroid_vm_new(const uint8_t *apk, size_t len, char **err);
 // Instantiate the launcher activity and run onCreate/onStart/onResume.
 // Returns the UI JSON (see below). Must be freed.
-char *idorid_vm_launch(IdoridVm *vm);
+char *indroid_vm_launch(IndroidVm *vm);
 // Deliver a click to the view with this id; returns the new UI JSON.
-char *idorid_vm_click(IdoridVm *vm, int32_t view_id);
+char *indroid_vm_click(IndroidVm *vm, int32_t view_id);
 // Text changed in an EditText; returns new UI JSON.
-char *idorid_vm_set_text(IdoridVm *vm, int32_t view_id, const char *utf8);
+char *indroid_vm_set_text(IndroidVm *vm, int32_t view_id, const char *utf8);
 // Back button. Returns new UI JSON ("finished": true when activity finished).
-char *idorid_vm_back(IdoridVm *vm);
+char *indroid_vm_back(IndroidVm *vm);
 // Drain logcat-style output (android.util.Log + System.out).
-char *idorid_vm_take_log(IdoridVm *vm);
+char *indroid_vm_take_log(IndroidVm *vm);
 // App label + package from the manifest, as JSON {"package":..,"label":..,"activity":..}.
-char *idorid_vm_info(IdoridVm *vm);
-void idorid_string_free(char *s);
-void idorid_vm_free(IdoridVm *vm);
+char *indroid_vm_info(IndroidVm *vm);
+void indroid_string_free(char *s);
+void indroid_vm_free(IndroidVm *vm);
 ```
 
 All calls for one VM must come from the same thread (host uses a dedicated
@@ -103,7 +103,7 @@ Layout params: `"width"`/`"height"`: `"match"`, `"wrap"`, or dp number;
 1. DEX parser + CLI dump. ✅ test: parse every dex produced by d8.
 2. Interpreter: arithmetic, branches, calls, arrays, strings, exceptions,
    virtual/interface dispatch, statics/<clinit>. Oracle test: the same Java
-   program run on the JVM and on idorid must print the same thing.
+   program run on the JVM and on indroid must print the same thing.
 3. Core library (java.lang, java.util collections, StringBuilder, boxing).
 4. Android shim: Activity lifecycle, View tree, OnClickListener, Log, Toast,
    programmatic UI; then layout XML inflation + string resources.

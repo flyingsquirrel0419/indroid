@@ -1,4 +1,4 @@
-# idorid neo fstab: system/vendor/product/system_ext are the ROM tree and
+# indroid neo fstab: system/vendor/product/system_ext are the ROM tree and
 # /data is a host directory, so there is nothing to map or fsck. /data is not
 # file-based-encrypted (the host sandbox protects it).
 /dev/block/vdc   /data     ext4      noatime,nosuid,nodev   wait,latemount

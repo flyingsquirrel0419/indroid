@@ -26,11 +26,11 @@ public final class VMXmlParser implements XmlResourceParser, XmlPullParser {
     private VMXml node() { return pos < 0 ? null : (VMXml) events.get(pos)[1]; }
     private android.view.XmlAttrs attrs;
     private int attrsPos = -2;
-    /** idorid: the current element's attributes as XmlAttrs (for obtainStyledAttributes). */
-    public android.view.XmlAttrs idoridAttrs() {
+    /** indroid: the current element's attributes as XmlAttrs (for obtainStyledAttributes). */
+    public android.view.XmlAttrs indroidAttrs() {
         if (attrsPos != pos) {
             VMXml n = node();
-            attrs = n == null ? android.view.XmlAttrs.EMPTY : android.view.XmlAttrs.idoridFrom(n.names, n.ids, n.values, ctx);
+            attrs = n == null ? android.view.XmlAttrs.EMPTY : android.view.XmlAttrs.indroidFrom(n.names, n.ids, n.values, ctx);
             attrsPos = pos;
         }
         return attrs;
@@ -77,25 +77,25 @@ public final class VMXmlParser implements XmlResourceParser, XmlPullParser {
     public String getAttributePrefix(int i) { return null; }
     public String getAttributeType(int i) { return "CDATA"; }
     public boolean isAttributeDefault(int i) { return false; }
-    public String getAttributeValue(int i) { return idoridAttrs().getAttributeValue(i); }
-    public String getAttributeValue(String ns, String name) { return idoridAttrs().getAttributeValue(ns, name); }
+    public String getAttributeValue(int i) { return indroidAttrs().getAttributeValue(i); }
+    public String getAttributeValue(String ns, String name) { return indroidAttrs().getAttributeValue(ns, name); }
     // AttributeSet
     public int getAttributeNameResource(int i) { return node().ids[i]; }
-    public int getAttributeListValue(String ns, String a, String[] opts, int d) { return idoridAttrs().getAttributeListValue(ns, a, opts, d); }
-    public boolean getAttributeBooleanValue(String ns, String a, boolean d) { return idoridAttrs().getAttributeBooleanValue(ns, a, d); }
-    public int getAttributeResourceValue(String ns, String a, int d) { return idoridAttrs().getAttributeResourceValue(ns, a, d); }
-    public int getAttributeIntValue(String ns, String a, int d) { return idoridAttrs().getAttributeIntValue(ns, a, d); }
-    public int getAttributeUnsignedIntValue(String ns, String a, int d) { return idoridAttrs().getAttributeUnsignedIntValue(ns, a, d); }
-    public float getAttributeFloatValue(String ns, String a, float d) { return idoridAttrs().getAttributeFloatValue(ns, a, d); }
+    public int getAttributeListValue(String ns, String a, String[] opts, int d) { return indroidAttrs().getAttributeListValue(ns, a, opts, d); }
+    public boolean getAttributeBooleanValue(String ns, String a, boolean d) { return indroidAttrs().getAttributeBooleanValue(ns, a, d); }
+    public int getAttributeResourceValue(String ns, String a, int d) { return indroidAttrs().getAttributeResourceValue(ns, a, d); }
+    public int getAttributeIntValue(String ns, String a, int d) { return indroidAttrs().getAttributeIntValue(ns, a, d); }
+    public int getAttributeUnsignedIntValue(String ns, String a, int d) { return indroidAttrs().getAttributeUnsignedIntValue(ns, a, d); }
+    public float getAttributeFloatValue(String ns, String a, float d) { return indroidAttrs().getAttributeFloatValue(ns, a, d); }
     public int getAttributeListValue(int i, String[] opts, int d) { String v = getAttributeValue(i); if (v == null) return d; for (int k = 0; k < opts.length; k++) if (opts[k].equals(v)) return k; return d; }
-    public boolean getAttributeBooleanValue(int i, boolean d) { return idoridAttrs().getAttributeBooleanValue(i, d); }
-    public int getAttributeResourceValue(int i, int d) { return idoridAttrs().getAttributeResourceValue(i, d); }
-    public int getAttributeIntValue(int i, int d) { return idoridAttrs().getAttributeIntValue(i, d); }
-    public int getAttributeUnsignedIntValue(int i, int d) { return idoridAttrs().getAttributeIntValue(i, d); }
-    public float getAttributeFloatValue(int i, float d) { return idoridAttrs().getAttributeFloatValue(i, d); }
-    public String getIdAttribute() { return idoridAttrs().getIdAttribute(); }
-    public String getClassAttribute() { return idoridAttrs().getClassAttribute(); }
-    public int getIdAttributeResourceValue(int d) { return idoridAttrs().getIdAttributeResourceValue(d); }
-    public int getStyleAttribute() { return idoridAttrs().getStyleAttribute(); }
+    public boolean getAttributeBooleanValue(int i, boolean d) { return indroidAttrs().getAttributeBooleanValue(i, d); }
+    public int getAttributeResourceValue(int i, int d) { return indroidAttrs().getAttributeResourceValue(i, d); }
+    public int getAttributeIntValue(int i, int d) { return indroidAttrs().getAttributeIntValue(i, d); }
+    public int getAttributeUnsignedIntValue(int i, int d) { return indroidAttrs().getAttributeIntValue(i, d); }
+    public float getAttributeFloatValue(int i, float d) { return indroidAttrs().getAttributeFloatValue(i, d); }
+    public String getIdAttribute() { return indroidAttrs().getIdAttribute(); }
+    public String getClassAttribute() { return indroidAttrs().getClassAttribute(); }
+    public int getIdAttributeResourceValue(int d) { return indroidAttrs().getIdAttributeResourceValue(d); }
+    public int getStyleAttribute() { return indroidAttrs().getStyleAttribute(); }
     public void close() {}
 }

@@ -1,11 +1,11 @@
 //! Turns an Android arm64 system image zip (as published for the SDK
-//! emulator) into the directory tree idorid neo boots from, without any
+//! emulator) into the directory tree indroid neo boots from, without any
 //! external tools, so it can run on the device (iOS) itself:
 //!
 //! zip → system.img (GPT) → super partition → ext4 partitions (system,
 //! system_ext, product, vendor) → files on disk, plus activated APEX payloads,
 //! apex-info-list.xml and the SELinux labels of every file
-//! (`.idorid-labels`, read by crates/kernel/src/selinux.rs).
+//! (`.indroid-labels`, read by crates/kernel/src/selinux.rs).
 
 pub mod ext4;
 
@@ -54,7 +54,7 @@ pub fn install(zip_path: &Path, out: &Path, work: &Path, progress: Progress) -> 
     activate_apexes(&tmp_out, work, &mut labels, progress)?;
     progress("writing metadata");
     write_apex_info_list(&tmp_out)?;
-    let mut lf = BufWriter::new(File::create(tmp_out.join(".idorid-labels"))?);
+    let mut lf = BufWriter::new(File::create(tmp_out.join(".indroid-labels"))?);
     for (p, l) in &labels {
         writeln!(lf, "{p}\t{l}")?;
     }

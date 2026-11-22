@@ -125,7 +125,7 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
     protected void dispatchDraw(android.graphics.Canvas c) {}
     protected boolean drawChild(android.graphics.Canvas c, View child, long time) { return false; }
     public boolean onInterceptTouchEvent(MotionEvent e) { return false; }
-    public boolean idoridHasTouchTarget() { return touchTarget != null; }
+    public boolean indroidHasTouchTarget() { return touchTarget != null; }
     public View focusSearch(View focused, int direction) { return null; }
 
     protected LayoutParams generateDefaultLayoutParams() { return new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT); }
@@ -150,13 +150,13 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
         child.mForceLayout = true;
         requestLayout();
         onViewAdded(child);
-        child.idoridAttached();
+        child.indroidAttached();
     }
     public void updateViewLayout(View v, LayoutParams p) { v.setLayoutParams(p); requestLayout(); }
-    public void removeView(View v) { if (children.remove(v)) { v.mParent = null; requestLayout(); v.idoridDetached(); } }
-    public void removeViewAt(int i) { View v = children.remove(i); v.mParent = null; requestLayout(); v.idoridDetached(); }
+    public void removeView(View v) { if (children.remove(v)) { v.mParent = null; requestLayout(); v.indroidDetached(); } }
+    public void removeViewAt(int i) { View v = children.remove(i); v.mParent = null; requestLayout(); v.indroidDetached(); }
     public void removeViews(int start, int count) { for (int i = 0; i < count; i++) removeViewAt(start); }
-    public void removeAllViews() { java.util.ArrayList<View> old = new java.util.ArrayList<View>(children); children.clear(); for (View v : old) { v.mParent = null; v.idoridDetached(); } requestLayout(); }
+    public void removeAllViews() { java.util.ArrayList<View> old = new java.util.ArrayList<View>(children); children.clear(); for (View v : old) { v.mParent = null; v.indroidDetached(); } requestLayout(); }
     public void removeAllViewsInLayout() { removeAllViews(); }
     public int getChildCount() { return children.size(); }
     public View getChildAt(int i) { return i < 0 || i >= children.size() ? null : children.get(i); }
@@ -225,7 +225,7 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
         return null;
     }
     View findByUid(int uid) {
-        if (uid == idoridUid) return this;
+        if (uid == indroidUid) return this;
         for (int i = 0; i < children.size(); i++) { View v = children.get(i).findByUid(uid); if (v != null) return v; }
         return null;
     }
@@ -285,11 +285,11 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
         super.attachTree(attach);
         for (int i = 0; i < children.size(); i++) children.get(i).attachTree(attach);
     }
-    protected String idoridType() { return "FrameLayout"; }
-    protected void idoridProps(StringBuilder sb) {
+    protected String indroidType() { return "FrameLayout"; }
+    protected void indroidProps(StringBuilder sb) {
         Json.key(sb, "children");
         sb.append('[');
-        for (int i = 0; i < children.size(); i++) { if (i > 0) sb.append(','); children.get(i).idoridJson(sb); }
+        for (int i = 0; i < children.size(); i++) { if (i > 0) sb.append(','); children.get(i).indroidJson(sb); }
         sb.append(']');
     }
 }

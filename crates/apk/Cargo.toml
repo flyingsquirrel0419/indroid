@@ -1,5 +1,5 @@
 [package]
-name = "idorid-apk"
+name = "indroid-apk"
 version.workspace = true
 edition.workspace = true
 license.workspace = true

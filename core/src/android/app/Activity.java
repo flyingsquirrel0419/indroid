@@ -30,7 +30,7 @@ public class Activity extends android.view.ContextThemeWrapper implements Window
         mIntent = intent;
         int t = ActivityThread.nativeTheme(getClass().getName());
         if (t == 0) t = ActivityThread.nativeTheme("");
-        setTheme(t != 0 ? t : IDORID_DEFAULT_THEME);
+        setTheme(t != 0 ? t : INDROID_DEFAULT_THEME);
         window = new Window(this);
         window.setCallback(this);
         mContent = (FrameLayout) window.getDecorView();
@@ -166,7 +166,7 @@ public class Activity extends android.view.ContextThemeWrapper implements Window
         onDestroy();
         for (Object o : callbacks()) ((Application.ActivityLifecycleCallbacks) o).onActivityDestroyed(this);
         for (Object o : callbacks()) ((Application.ActivityLifecycleCallbacks) o).onActivityPostDestroyed(this);
-        if (mContent != null) mContent.idoridSetAttached(false);
+        if (mContent != null) mContent.indroidSetAttached(false);
     }
     boolean mDestroyed;
 

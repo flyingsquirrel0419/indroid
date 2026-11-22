@@ -211,9 +211,9 @@ impl Api {
             fill_caps: sym!("stream_renderer_fill_caps"),
             create_fence: sym!("stream_renderer_create_fence"),
             flush: sym!("stream_renderer_flush"),
-            set_frame_callback: unsafe { lib.symbol(c"idorid_set_frame_callback").ok() },
-            set_dma_resolver: unsafe { lib.symbol(c"idorid_set_dma_resolver").ok() },
-            set_puid_resolver: unsafe { lib.symbol(c"idorid_set_puid_resolver").ok() },
+            set_frame_callback: unsafe { lib.symbol(c"indroid_set_frame_callback").ok() },
+            set_dma_resolver: unsafe { lib.symbol(c"indroid_set_dma_resolver").ok() },
+            set_puid_resolver: unsafe { lib.symbol(c"indroid_set_puid_resolver").ok() },
             _library: lib,
         })
     }
@@ -230,15 +230,15 @@ type FenceCallback = Box<dyn Fn(Fence) + Send + Sync>;
 static RENDERER_ACTIVE: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 
 /// gfxstream asks which guest process a context belongs to (see
-/// idorid_kernel::virtgpu::context_puid).
+/// indroid_kernel::virtgpu::context_puid).
 unsafe extern "C" fn puid_resolve(ctx: u32, release: libc::c_int) -> u64 {
-    idorid_kernel::virtgpu::context_puid(ctx, release != 0)
+    indroid_kernel::virtgpu::context_puid(ctx, release != 0)
 }
 
 /// gfxstream asks for the host address of guest DMA buffers (goldfish
 /// address-space blocks) on its render threads.
 unsafe extern "C" fn dma_resolve(paddr: u64) -> *mut libc::c_void {
-    let p = idorid_kernel::virtgpu::dma_host_addr(paddr);
+    let p = indroid_kernel::virtgpu::dma_host_addr(paddr);
     if p.is_null() {
         eprintln!("gpu: unresolved DMA address {paddr:#x}");
     }
@@ -258,7 +258,7 @@ unsafe extern "C" fn dump_frame(width: u32, height: u32, pixels: *const u8) {
     if pixels.is_null() || width == 0 || height == 0 || width > 16384 || height > 16384 {
         return;
     }
-    let Some(path) = std::env::var_os("IDORID_FB_DUMP") else {
+    let Some(path) = std::env::var_os("INDROID_FB_DUMP") else {
         return;
     };
     let result = std::panic::catch_unwind(|| {
@@ -321,16 +321,16 @@ impl Renderer {
         }
         match api.set_dma_resolver {
             Some(set_resolver) => unsafe { set_resolver(Some(dma_resolve)) },
-            None => eprintln!("gfxstream backend has no idorid DMA resolver hook"),
+            None => eprintln!("gfxstream backend has no indroid DMA resolver hook"),
         }
         match api.set_puid_resolver {
             Some(set_resolver) => unsafe { set_resolver(Some(puid_resolve)) },
-            None => eprintln!("gfxstream backend has no idorid puid resolver hook"),
+            None => eprintln!("gfxstream backend has no indroid puid resolver hook"),
         }
-        if std::env::var_os("IDORID_FB_DUMP").is_some() {
+        if std::env::var_os("INDROID_FB_DUMP").is_some() {
             match api.set_frame_callback {
                 Some(set_callback) => unsafe { set_callback(Some(dump_frame)) },
-                None => eprintln!("gfxstream backend has no idorid frame-capture hook"),
+                None => eprintln!("gfxstream backend has no indroid frame-capture hook"),
             }
         }
         Ok(Self {
@@ -378,7 +378,7 @@ pub struct KernelBackend {
     renderer: Arc<Renderer>,
     fences: Arc<
         std::sync::Mutex<
-            std::collections::HashMap<u64, std::sync::Weak<idorid_kernel::virtgpu::GpuFence>>,
+            std::collections::HashMap<u64, std::sync::Weak<indroid_kernel::virtgpu::GpuFence>>,
         >,
     >,
     next_fence: std::sync::atomic::AtomicU64,
@@ -388,7 +388,7 @@ impl KernelBackend {
     pub fn load(path: &Path) -> Result<Arc<Self>, String> {
         let fences = Arc::new(std::sync::Mutex::new(std::collections::HashMap::<
             u64,
-            std::sync::Weak<idorid_kernel::virtgpu::GpuFence>,
+            std::sync::Weak<indroid_kernel::virtgpu::GpuFence>,
         >::new()));
         let callback_fences = fences.clone();
         let renderer = Renderer::init(path, move |fence| {
@@ -454,7 +454,7 @@ impl Drop for KernelResource {
         }
     }
 }
-impl idorid_kernel::virtgpu::GpuResource for KernelResource {
+impl indroid_kernel::virtgpu::GpuResource for KernelResource {
     fn id(&self) -> u32 {
         self.id
     }
@@ -462,8 +462,8 @@ impl idorid_kernel::virtgpu::GpuResource for KernelResource {
         &self,
         ctx: u32,
         to_host: bool,
-        args: idorid_kernel::virtgpu::TransferArgs,
-    ) -> idorid_kernel::vfs::Result<()> {
+        args: indroid_kernel::virtgpu::TransferArgs,
+    ) -> indroid_kernel::vfs::Result<()> {
         let [x, y, z, w, h, d] = args.region;
         let mut region = Box3d { x, y, z, w, h, d };
         let _guard = self
@@ -501,13 +501,13 @@ impl idorid_kernel::virtgpu::GpuResource for KernelResource {
         renderer_result(ret)
     }
 
-    fn map(self: Arc<Self>) -> idorid_kernel::vfs::Result<Arc<idorid_kernel::mm::SharedMem>> {
+    fn map(self: Arc<Self>) -> indroid_kernel::vfs::Result<Arc<indroid_kernel::mm::SharedMem>> {
         if let Some(backing) = &self.backing {
             let ptr = unsafe { (*backing.0.get()).as_mut_ptr() };
             let size = unsafe { (&*backing.0.get()).len() } as u64;
             let owner: Arc<dyn Send + Sync> = self;
-            return unsafe { idorid_kernel::mm::SharedMem::from_external(ptr, size, owner) }
-                .ok_or(idorid_kernel::errno::EINVAL);
+            return unsafe { indroid_kernel::mm::SharedMem::from_external(ptr, size, owner) }
+                .ok_or(indroid_kernel::errno::EINVAL);
         }
         let _guard = self
             .renderer
@@ -522,26 +522,26 @@ impl idorid_kernel::virtgpu::GpuResource for KernelResource {
         }
         drop(_guard);
         let owner: Arc<dyn Send + Sync> = self;
-        unsafe { idorid_kernel::mm::SharedMem::from_external(ptr.cast(), size, owner) }
-            .ok_or(idorid_kernel::errno::EINVAL)
+        unsafe { indroid_kernel::mm::SharedMem::from_external(ptr.cast(), size, owner) }
+            .ok_or(indroid_kernel::errno::EINVAL)
     }
 }
-impl idorid_kernel::virtgpu::GpuBackend for KernelBackend {
-    fn capset(&self, id: u32, version: u32) -> idorid_kernel::vfs::Result<Vec<u8>> {
+impl indroid_kernel::virtgpu::GpuBackend for KernelBackend {
+    fn capset(&self, id: u32, version: u32) -> indroid_kernel::vfs::Result<Vec<u8>> {
         let (max_version, data) = self
             .renderer
             .capset(id)
-            .map_err(|_| idorid_kernel::errno::EINVAL)?;
+            .map_err(|_| indroid_kernel::errno::EINVAL)?;
         if version > max_version {
-            return Err(idorid_kernel::errno::EINVAL);
+            return Err(indroid_kernel::errno::EINVAL);
         }
         Ok(data)
     }
     fn supports_context(&self) -> bool {
         true
     }
-    fn context_create(&self, id: u32, capset: u32) -> idorid_kernel::vfs::Result<()> {
-        let name = b"idorid\0";
+    fn context_create(&self, id: u32, capset: u32) -> indroid_kernel::vfs::Result<()> {
+        let name = b"indroid\0";
         let ret = {
             let _guard = self
                 .renderer
@@ -573,15 +573,15 @@ impl idorid_kernel::virtgpu::GpuBackend for KernelBackend {
         &self,
         ctx: u32,
         id: u32,
-        args: idorid_kernel::virtgpu::ResourceArgs,
-    ) -> idorid_kernel::vfs::Result<Arc<dyn idorid_kernel::virtgpu::GpuResource>> {
+        args: indroid_kernel::virtgpu::ResourceArgs,
+    ) -> indroid_kernel::vfs::Result<Arc<dyn indroid_kernel::virtgpu::GpuResource>> {
         let context = self
             .contexts
             .lock()
             .unwrap_or_else(|e| e.into_inner())
             .get(&ctx)
             .cloned()
-            .ok_or(idorid_kernel::errno::EINVAL)?;
+            .ok_or(indroid_kernel::errno::EINVAL)?;
         let [target, format, bind, width, height, depth, array_size, last_level, nr_samples, flags] =
             args.values;
         let mut create = ResourceCreate {
@@ -629,14 +629,14 @@ impl idorid_kernel::virtgpu::GpuBackend for KernelBackend {
         flags: u32,
         blob_id: u64,
         size: u64,
-    ) -> idorid_kernel::vfs::Result<Arc<dyn idorid_kernel::virtgpu::GpuResource>> {
+    ) -> indroid_kernel::vfs::Result<Arc<dyn indroid_kernel::virtgpu::GpuResource>> {
         let context = self
             .contexts
             .lock()
             .unwrap_or_else(|e| e.into_inner())
             .get(&ctx)
             .cloned()
-            .ok_or(idorid_kernel::errno::EINVAL)?;
+            .ok_or(indroid_kernel::errno::EINVAL)?;
         let _guard = self
             .renderer
             .api_lock
@@ -668,8 +668,8 @@ impl idorid_kernel::virtgpu::GpuBackend for KernelBackend {
         &self,
         ctx: u32,
         ring: Option<u8>,
-        signal: Arc<idorid_kernel::virtgpu::GpuFence>,
-    ) -> idorid_kernel::vfs::Result<()> {
+        signal: Arc<indroid_kernel::virtgpu::GpuFence>,
+    ) -> indroid_kernel::vfs::Result<()> {
         let id = self
             .next_fence
             .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
@@ -700,7 +700,7 @@ impl idorid_kernel::virtgpu::GpuBackend for KernelBackend {
         }
         result
     }
-    fn submit(&self, ctx: u32, bytes: &mut [u8]) -> idorid_kernel::vfs::Result<()> {
+    fn submit(&self, ctx: u32, bytes: &mut [u8]) -> indroid_kernel::vfs::Result<()> {
         let _guard = self
             .renderer
             .api_lock
@@ -716,7 +716,7 @@ impl idorid_kernel::virtgpu::GpuBackend for KernelBackend {
         renderer_result(unsafe { (self.renderer.api.submit_cmd)(&mut cmd) })
     }
 }
-fn renderer_result(ret: i32) -> idorid_kernel::vfs::Result<()> {
+fn renderer_result(ret: i32) -> indroid_kernel::vfs::Result<()> {
     if ret == 0 {
         Ok(())
     } else if ret < 0 {
@@ -728,7 +728,7 @@ fn renderer_result(ret: i32) -> idorid_kernel::vfs::Result<()> {
 
 fn gpu_debug() -> bool {
     static ON: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
-    *ON.get_or_init(|| std::env::var_os("IDORID_GPU_DEBUG").is_some())
+    *ON.get_or_init(|| std::env::var_os("INDROID_GPU_DEBUG").is_some())
 }
 
 #[cfg(test)]
@@ -736,6 +736,6 @@ mod tests {
     use super::*;
     #[test]
     fn missing_library_is_an_error() {
-        assert!(Library::open(Path::new("/nonexistent/idorid-gfxstream.so")).is_err());
+        assert!(Library::open(Path::new("/nonexistent/indroid-gfxstream.so")).is_err());
     }
 }

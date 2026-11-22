@@ -30,7 +30,7 @@ public abstract class Context {
     public final android.content.res.TypedArray obtainStyledAttributes(android.util.AttributeSet set, int[] attrs) { return getTheme().obtainStyledAttributes(set, attrs, 0, 0); }
     public final android.content.res.TypedArray obtainStyledAttributes(android.util.AttributeSet set, int[] attrs, int defStyleAttr, int defStyleRes) { return getTheme().obtainStyledAttributes(set, attrs, defStyleAttr, defStyleRes); }
     /** android.R.style.Theme_Material_Light: used when the manifest names no theme. */
-    public static final int IDORID_DEFAULT_THEME = 0x01030237;
+    public static final int INDROID_DEFAULT_THEME = 0x01030237;
     public ClassLoader getClassLoader() { return ClassLoader.getSystemClassLoader(); }
     public android.content.pm.ApplicationInfo getApplicationInfo() { return new android.content.pm.ApplicationInfo(); }
     public android.content.pm.PackageManager getPackageManager() { return new android.content.pm.PackageManager(); }

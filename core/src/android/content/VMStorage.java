@@ -1,5 +1,5 @@
 package android.content;
-/** idorid: small key/value files in the app's private data directory (host-provided). */
+/** indroid: small key/value files in the app's private data directory (host-provided). */
 public final class VMStorage {
     private VMStorage() {}
     public static native String load(String path);

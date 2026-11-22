@@ -1,6 +1,6 @@
 #!/system/bin/sh
-# idorid neo: APEXes are already activated under /apex (installed by
-# idorid-rom / tools/fetch-rom.sh), so apexd only reports status. init waits
+# indroid neo: APEXes are already activated under /apex (installed by
+# indroid-rom / tools/fetch-rom.sh), so apexd only reports status. init waits
 # for apexd.status=activated in post-fs-data; "ready" comes later, as with the
 # real apexd, once boot has completed.
 case "$1" in

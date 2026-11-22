@@ -6,32 +6,28 @@ if [[ "${SIMULATOR:-0}" == "1" ]]; then
   rust_target=aarch64-apple-ios-sim
   sdk=iphonesimulator
   swift_target=arm64-apple-ios15.0-simulator
-  app=build/sim/idorid.app
+  app=build/sim/indroid.app
 else
   rust_target=aarch64-apple-ios
   sdk=iphoneos
   swift_target=arm64-apple-ios15.0
-  app=build/Payload/idorid.app
+  app=build/Payload/indroid.app
   rm -rf build/Payload
 fi
 
-cargo build --profile release-ffi -p idorid-ffi --target "$rust_target"
+cargo build --profile release-ffi -p indroid-ffi --target "$rust_target"
 rm -rf "$app"
 mkdir -p "$app"
 xcrun -sdk "$sdk" swiftc -sdk "$(xcrun --sdk "$sdk" --show-sdk-path)" \
   -target "$swift_target" -O -import-objc-header ios/Bridging-Header.h \
-  -L "target/$rust_target/release-ffi" -lidorid_ffi \
-  -framework UIKit -framework UniformTypeIdentifiers -framework Security -framework SystemConfiguration -lc++ \
-  ios/Sources/*.swift -o "$app/idorid"
+  -L "target/$rust_target/release-ffi" -lindroid_ffi \
+  -framework UIKit -framework Security -framework SystemConfiguration -lc++ \
+  ios/Sources/*.swift -o "$app/indroid"
 cp ios/Info.plist "$app/Info.plist"
-# idorid neo: our patches layered over the Android ROM.
+# indroid neo: our patches layered over the Android ROM.
 cp -Rp rom-overlay "$app/rom-overlay"
-mkdir -p "$app/Examples"
-cp examples/*.apk "$app/Examples/" 2>/dev/null || true
-cp tests/fixtures/sample.apk "$app/Examples/Hello Sample.apk" 2>/dev/null || true
-cp tests/fixtures/androidx-hello-release.apk "$app/Examples/Hello AndroidX.apk" 2>/dev/null || true
 printf 'APPL????' > "$app/PkgInfo"
 if [[ "${SIMULATOR:-0}" != "1" ]]; then
-  rm -f build/idorid.ipa
-  (cd build && zip -qry idorid.ipa Payload)
+  rm -f build/indroid.ipa
+  (cd build && zip -qry indroid.ipa Payload)
 fi

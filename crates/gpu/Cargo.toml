@@ -1,10 +1,10 @@
 [package]
-name = "idorid-gpu"
+name = "indroid-gpu"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 
 [dependencies]
 libc = "0.2"
-idorid-kernel = { path = "../kernel" }
+indroid-kernel = { path = "../kernel" }
 png = "0.17"

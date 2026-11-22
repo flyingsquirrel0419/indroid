@@ -54,7 +54,7 @@ fun main() {
     println(Loud().greet("kotlin"))
     println(Counter.next() + Counter.next())
     println(Box.of(42))
-    println("idorid".shout())
+    println("indroid".shout())
     println(measure { (1..10).filter { it % 2 == 0 }.sum() })
     println(lazyValue)
     println(lazyValue.length)

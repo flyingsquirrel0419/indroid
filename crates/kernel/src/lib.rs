@@ -1,5 +1,5 @@
-//! idorid neo kernel: the Linux user-space ABI implemented in Rust, so that
-//! an unmodified AOSP aarch64 userspace can run on [`idorid_a64`] inside an
+//! indroid neo kernel: the Linux user-space ABI implemented in Rust, so that
+//! an unmodified AOSP aarch64 userspace can run on [`indroid_a64`] inside an
 //! iOS app. See docs/NEO.md.
 #![allow(
     clippy::type_complexity,
@@ -47,11 +47,11 @@ use std::sync::atomic::{AtomicBool, AtomicI32, AtomicU32, AtomicU64, Ordering};
 use std::sync::Arc;
 use task::*;
 
-/// HWCAP bits we advertise (must match what idorid-a64 implements).
+/// HWCAP bits we advertise (must match what indroid-a64 implements).
 pub const HWCAP: u64 = (1 << 0) // FP
     | (1 << 1) // ASIMD
     // AES/PMULL/SHA1/SHA2 (bits 3-6) are advertised once the crypto
-    // extensions land in idorid-a64.
+    // extensions land in indroid-a64.
     | (1 << 7) // CRC32
     | (1 << 8) // ATOMICS
     | (1 << 9) // FPHP
@@ -101,7 +101,7 @@ pub struct Kernel {
     pub insns: AtomicU64,
     pub touchscreen: Arc<input::InputDevice>,
     pub keys: Arc<input::InputDevice>,
-    /// Sampling profile of guest code pages (IDORID_PROFILE=<out file>).
+    /// Sampling profile of guest code pages (INDROID_PROFILE=<out file>).
     pub profile: Option<profile::Profile>,
 }
 
@@ -129,21 +129,21 @@ impl Kernel {
             next_pid: AtomicI32::new(1),
             futexes: futex::Futexes::default(),
             console,
-            trace_syscalls: AtomicBool::new(std::env::var_os("IDORID_STRACE").is_some()),
-            trace_faults: std::env::var_os("IDORID_TRACE_FAULTS").is_some(),
+            trace_syscalls: AtomicBool::new(std::env::var_os("INDROID_STRACE").is_some()),
+            trace_faults: std::env::var_os("INDROID_TRACE_FAULTS").is_some(),
             hostname: Mutex::new("localhost".into()),
             exits: sync::WaitQueue::new(),
             live_threads: AtomicU32::new(0),
             insns: AtomicU64::new(0),
             touchscreen: input::InputDevice::new(
-                "idorid-touchscreen",
+                "indroid-touchscreen",
                 input::DeviceKind::Touchscreen {
                     width: 1080,
                     height: 2340,
                 },
             ),
-            keys: input::InputDevice::new("idorid-keys", input::DeviceKind::Keys),
-            profile: std::env::var_os("IDORID_PROFILE").map(|p| profile::Profile::new(p.into())),
+            keys: input::InputDevice::new("indroid-keys", input::DeviceKind::Keys),
+            profile: std::env::var_os("INDROID_PROFILE").map(|p| profile::Profile::new(p.into())),
         });
         k.install_devices();
         k.first_stage(&cfg.state);
@@ -194,7 +194,7 @@ impl Kernel {
         ] {
             let _ = std::fs::create_dir_all(state.join(d));
         }
-        let _ = std::fs::write(state.join("sys/fs/selinux/.idorid-disabled"), b"");
+        let _ = std::fs::write(state.join("sys/fs/selinux/.indroid-disabled"), b"");
     }
 
     /// Install or remove the host GPU provider. Existing open nodes see changes.
@@ -364,7 +364,7 @@ impl Kernel {
             thread: thread.clone(),
             mm: proc_.mm(),
         };
-        let mut cpu = idorid_a64::Cpu::new();
+        let mut cpu = indroid_a64::Cpu::new();
         let argv: Vec<Vec<u8>> = argv.iter().map(|s| s.as_bytes().to_vec()).collect();
         let envp: Vec<Vec<u8>> = envp.iter().map(|s| s.as_bytes().to_vec()).collect();
         syscall::do_execve(&ctx, &mut cpu, path, argv, envp)?;
@@ -372,7 +372,7 @@ impl Kernel {
         Ok(pid)
     }
 
-    pub fn start_thread(self: &Arc<Self>, thread: Arc<Thread>, cpu: idorid_a64::Cpu) {
+    pub fn start_thread(self: &Arc<Self>, thread: Arc<Thread>, cpu: indroid_a64::Cpu) {
         let k = self.clone();
         self.live_threads.fetch_add(1, Ordering::SeqCst);
         std::thread::Builder::new()

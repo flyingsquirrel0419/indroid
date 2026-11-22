@@ -1,4 +1,4 @@
-use idorid_ffi::{idorid_set_text_measurer, App};
+use indroid_ffi::{indroid_set_text_measurer, App};
 use std::ffi::{c_char, CStr};
 
 unsafe extern "C" fn measure(
@@ -22,12 +22,12 @@ fn layout_hooks_work_for_loaded_apps() {
     .unwrap();
     let mut app = App::load(bytes, false).unwrap();
     let fallback = app.vm.text_measurer.as_ref().unwrap()("test", 12.0, 0, 100.0);
-    idorid_set_text_measurer(Some(measure));
+    indroid_set_text_measurer(Some(measure));
     assert_eq!(
         app.vm.text_measurer.as_ref().unwrap()("test", 12.0, 3, 100.0),
         (15.0, 100.0)
     );
-    idorid_set_text_measurer(None);
+    indroid_set_text_measurer(None);
     assert_eq!(
         app.vm.text_measurer.as_ref().unwrap()("test", 12.0, 0, 100.0),
         fallback

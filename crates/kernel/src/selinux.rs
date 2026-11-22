@@ -121,7 +121,7 @@ static XATTR_LABELS: OnceLock<std::collections::HashMap<String, String>> = OnceL
 
 pub fn file_label(rom: &std::path::Path, path: &str, mode: u32) -> String {
     let x = XATTR_LABELS.get_or_init(|| {
-        std::fs::read_to_string(rom.join(".idorid-labels"))
+        std::fs::read_to_string(rom.join(".indroid-labels"))
             .unwrap_or_default()
             .lines()
             .filter_map(|l| l.split_once('\t'))

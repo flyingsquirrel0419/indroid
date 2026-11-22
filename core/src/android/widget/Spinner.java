@@ -45,14 +45,14 @@ public class Spinner extends AbsSpinner {
         setMeasuredDimension(width, height);
     }
     protected void onLayout(boolean changed, int l, int t, int r, int b) {}
-    protected String idoridType() { return "Spinner"; }
-    protected void idoridProps(StringBuilder sb) {
+    protected String indroidType() { return "Spinner"; }
+    protected void indroidProps(StringBuilder sb) {
         Json.key(sb, "selected"); sb.append(selected);
         Json.key(sb, "items"); sb.append('[');
         for (int i = 0; i < getChildCount(); i++) {
             if (i > 0) sb.append(',');
             View c = getChildAt(i);
-            sb.append("{\"id\":").append(c.idoridUid).append(",\"text\":");
+            sb.append("{\"id\":").append(c.indroidUid).append(",\"text\":");
             CharSequence t = c instanceof TextView ? ((TextView) c).getText() : String.valueOf(adapter.getItem(i));
             Json.str(sb, t);
             sb.append('}');

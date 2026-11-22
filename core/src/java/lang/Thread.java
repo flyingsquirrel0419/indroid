@@ -1,7 +1,7 @@
 package java.lang;
 
 /**
- * idorid runs Java code on a single interpreter thread. Thread.start() hands
+ * indroid runs Java code on a single interpreter thread. Thread.start() hands
  * the runnable to the VM which runs it cooperatively (after the current event
  * finishes, see VMThread). sleep() does not block.
  */

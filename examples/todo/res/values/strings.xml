@@ -4,5 +4,5 @@
     <string name="hint">What needs doing?</string>
     <string name="about">About</string>
     <string name="empty">Nothing to do 🎉</string>
-    <string name="about_text">This is an unmodified Android APK running on idorid: a Dalvik interpreter written in Rust. No JIT, no emulator.</string>
+    <string name="about_text">This is an unmodified Android APK running on indroid: a Dalvik interpreter written in Rust. No JIT, no emulator.</string>
 </resources>

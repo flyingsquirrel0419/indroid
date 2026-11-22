@@ -28,19 +28,19 @@ public class VectorDrawable extends Drawable {
  public void setIntrinsicSize(int w,int h){width=w;height=h;} public int getIntrinsicWidth(){return width;} public int getIntrinsicHeight(){return height;}
  private static String attr(VMXml n,int id,String name,Resources res,Resources.Theme theme) {
   String v=n.get(id);if(v==null)v=n.get(name);
-  for(int i=0;i<16 && v!=null;i++) { char k=VMValue.kind(v); if(k=='a' && theme!=null) v=theme.idoridAttr(VMValue.intOf(v,0)); else if(k=='r' && res!=null) { String next=res.idoridValue(VMValue.intOf(v,0));if(next==null)break;v=next; } else break; }
+  for(int i=0;i<16 && v!=null;i++) { char k=VMValue.kind(v); if(k=='a' && theme!=null) v=theme.indroidAttr(VMValue.intOf(v,0)); else if(k=='r' && res!=null) { String next=res.indroidValue(VMValue.intOf(v,0));if(next==null)break;v=next; } else break; }
   return v;
  }
  private static float num(VMXml n,int id,String name,Resources r,Resources.Theme t,float def){return VMValue.floatOf(attr(n,id,name,r,t),def);}
  private static int color(VMXml n,int id,String name,Resources r,Resources.Theme t,int def) {
   String original=n.get(id);if(original==null)original=n.get(name);String v=attr(n,id,name,r,t); if(v==null)return def;
-  if(VMValue.kind(v)=='p' && r!=null){ColorStateList list=ColorStateList.idoridInflate(r,VMValue.body(v),t);return list==null?def:list.getDefaultColor();}
+  if(VMValue.kind(v)=='p' && r!=null){ColorStateList list=ColorStateList.indroidInflate(r,VMValue.body(v),t);return list==null?def:list.getDefaultColor();}
   if(VMValue.kind(v)=='r' && r!=null) {try{return r.getColor(VMValue.intOf(v,0),t);}catch(RuntimeException ignored){return def;}}
   if(VMValue.kind(v)=='s' && VMValue.body(v).startsWith("#")){try{return android.graphics.Color.parseColor(VMValue.body(v));}catch(RuntimeException ignored){return def;}}
   return VMValue.intOf(v,def);
  }
  private static int choice(String v,String a,String b,int def) { if(v==null)return def;String s=VMValue.body(v);if(s.equals(a))return 1;if(s.equals(b))return 2;return VMValue.intOf(v,def); }
- public static VectorDrawable idoridInflate(VMXml n,Resources r,Resources.Theme t) {
+ public static VectorDrawable indroidInflate(VMXml n,Resources r,Resources.Theme t) {
   VectorDrawable v=new VectorDrawable(); if(n==null)return v;
   v.width=(int)num(n,0x01010159,"width",r,t,-1);v.height=(int)num(n,0x01010155,"height",r,t,-1);
   v.viewportW=num(n,0x01010402,"viewportWidth",r,t,0);v.viewportH=num(n,0x01010403,"viewportHeight",r,t,0);

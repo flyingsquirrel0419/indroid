@@ -5,7 +5,7 @@ use std::time::Duration;
 
 #[test]
 fn binder_contexts_and_protocol_version() {
-    let root = std::env::temp_dir().join(format!("idorid-binder-test-{}", std::process::id()));
+    let root = std::env::temp_dir().join(format!("indroid-binder-test-{}", std::process::id()));
     let rom = root.join("rom");
     std::fs::create_dir_all(rom.join("bin")).unwrap();
     let source = root.join("binder.c");
@@ -105,7 +105,7 @@ int main(void) {
     }
     let out = Arc::new(Mutex::new(Vec::new()));
     let sink = out.clone();
-    let kernel = idorid_kernel::Kernel::new(idorid_kernel::Config {
+    let kernel = indroid_kernel::Kernel::new(indroid_kernel::Config {
         rom,
         overlays: vec![],
         state: root.join("state"),
@@ -127,13 +127,13 @@ int main(void) {
 fn android_servicemanager_and_service_list() {
     use std::sync::atomic::Ordering;
     let rom = std::path::PathBuf::from(
-        std::env::var("IDORID_TEST_ROM")
+        std::env::var("INDROID_TEST_ROM")
             .unwrap_or_else(|_| format!("{}/aosp/rom13", std::env::var("HOME").unwrap())),
     );
-    let root = std::env::temp_dir().join(format!("idorid-binder-rom-{}", std::process::id()));
+    let root = std::env::temp_dir().join(format!("indroid-binder-rom-{}", std::process::id()));
     let output = Arc::new(Mutex::new(Vec::<u8>::new()));
     let sink = output.clone();
-    let kernel = idorid_kernel::Kernel::new(idorid_kernel::Config {
+    let kernel = indroid_kernel::Kernel::new(indroid_kernel::Config {
         rom,
         overlays: vec![
             std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../rom-overlay")
@@ -175,7 +175,7 @@ fn android_servicemanager_and_service_list() {
     }
     let completed = !kernel.procs.lock().contains_key(&client);
     if let Some(process) = kernel.procs.lock().get(&manager).cloned() {
-        kernel.exit_group(&process, idorid_kernel::task::ExitStatus::Exited(0));
+        kernel.exit_group(&process, indroid_kernel::task::ExitStatus::Exited(0));
     }
     let text = String::from_utf8_lossy(&output.lock().unwrap()).into_owned();
     assert!(completed, "service list timed out: {text}");

@@ -1,21 +1,21 @@
 [package]
-name = "idorid-cli"
+name = "indroid-cli"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 repository.workspace = true
 
 [[bin]]
-name = "idorid"
+name = "indroid"
 path = "src/main.rs"
 
 [dependencies]
 libc = "0.2"
-idorid-dex = { path = "../dex" }
-idorid-vm = { path = "../vm" }
-idorid-apk = { path = "../apk" }
-idorid-ffi = { path = "../ffi" }
-idorid-kernel = { path = "../kernel" }
-idorid-rom = { path = "../rom" }
+indroid-dex = { path = "../dex" }
+indroid-vm = { path = "../vm" }
+indroid-apk = { path = "../apk" }
+indroid-ffi = { path = "../ffi" }
+indroid-kernel = { path = "../kernel" }
+indroid-rom = { path = "../rom" }
 serde_json = "1"
-idorid-gpu = { path = "../gpu" }
+indroid-gpu = { path = "../gpu" }

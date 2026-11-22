@@ -1,6 +1,6 @@
 package android.view;
 
-/** idorid: text metrics from the host (UIKit on iOS, an approximation headless). */
+/** indroid: text metrics from the host (UIKit on iOS, an approximation headless). */
 public final class VMText {
     private VMText() {}
     public static final int BOLD = 1, ITALIC = 2, MONOSPACE = 4;

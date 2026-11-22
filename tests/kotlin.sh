@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Kotlin oracle: tests/kotlin/<Name>.kt is compiled with kotlinc, run on the
-# JVM and on idorid (kotlin-stdlib dexed alongside), outputs must match.
+# JVM and on indroid (kotlin-stdlib dexed alongside), outputs must match.
 set -uo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SDK="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-$HOME/android-sdk}}"
@@ -9,10 +9,10 @@ ANDROID_JAR="$(ls -d "$SDK"/platforms/android-*/ | sort -V | tail -1)android.jar
 KOTLINC="${KOTLINC:-$( [ -x "$HOME/tools/kotlinc/bin/kotlinc" ] && echo "$HOME/tools/kotlinc/bin/kotlinc" || command -v kotlinc)}"
 KOTLINC="$(readlink -f "$KOTLINC")"
 STDLIB="$(dirname "$KOTLINC")/../lib/kotlin-stdlib.jar"
-BIN="$ROOT/target/release/idorid"
+BIN="$ROOT/target/release/indroid"
 OUT="$ROOT/tests/out/kotlin"
 mkdir -p "$OUT"
-cargo build -q --release -p idorid-cli --manifest-path "$ROOT/Cargo.toml" || exit 1
+cargo build -q --release -p indroid-cli --manifest-path "$ROOT/Cargo.toml" || exit 1
 if [ ! -f "$OUT/stdlib/classes.dex" ] || [ "$STDLIB" -nt "$OUT/stdlib/classes.dex" ]; then
   mkdir -p "$OUT/stdlib"
   "$D8" --min-api 24 --lib "$ANDROID_JAR" --output "$OUT/stdlib" "$STDLIB" > "$OUT/stdlib/d8.log" 2>&1 || { echo "d8 of $STDLIB failed"; tail -20 "$OUT/stdlib/d8.log"; exit 1; }

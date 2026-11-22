@@ -50,6 +50,6 @@ public class ScrollView extends FrameLayout {
             child.measure(cws, MeasureSpec.makeMeasureSpec(avail, MeasureSpec.EXACTLY));
         }
     }
-    protected String idoridType() { return "ScrollView"; }
+    protected String indroidType() { return "ScrollView"; }
     public ScrollView(Context c, AttributeSet a, int s, int r) { this(c,a,s); }
 }

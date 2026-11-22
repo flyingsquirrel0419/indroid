@@ -9,5 +9,5 @@ public class PropertyValuesHolder {
     public static PropertyValuesHolder ofInt(Property property,int... values) { PropertyValuesHolder p=ofInt(property.getName(),values);p.property=property;return p; }
     public String getPropertyName(){return name;} public void setPropertyName(String name){this.name=name;} public void setFloatValues(float... values){floats=values;ints=null;} public void setIntValues(int... values){ints=values;floats=null;}
     public PropertyValuesHolder clone() { PropertyValuesHolder p=new PropertyValuesHolder(name); p.property=property; p.floats=floats==null?null:floats.clone(); p.ints=ints==null?null:ints.clone(); return p; }
-    float[] idoridFloats() { return floats; } int[] idoridInts() { return ints; } Property idoridProperty() { return property; }
+    float[] indroidFloats() { return floats; } int[] indroidInts() { return ints; } Property indroidProperty() { return property; }
 }

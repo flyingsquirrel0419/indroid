@@ -2,8 +2,8 @@
 
 use std::collections::HashMap;
 
-use idorid_apk::axml::{Document, Element};
-use idorid_apk::resources::ResValue;
+use indroid_apk::axml::{Document, Element};
+use indroid_apk::resources::ResValue;
 
 /// Map from fully-qualified activity class ("" for the application) to theme id.
 pub fn read(manifest: &[u8], package: &str) -> HashMap<String, u32> {

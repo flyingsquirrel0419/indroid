@@ -4,7 +4,7 @@ use crate::fd::FdTable;
 use crate::mm::Mm;
 use crate::sync::WaitQueue;
 use crate::Kernel;
-use idorid_a64::{Cpu, Exit};
+use indroid_a64::{Cpu, Exit};
 use parking_lot::{Mutex, RwLock};
 use std::cell::RefCell;
 use std::collections::VecDeque;

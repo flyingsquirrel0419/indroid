@@ -21,7 +21,7 @@ public class View implements Drawable.Callback {
     private static int nextUid = 1;
     private static final Handler HANDLER = new Handler();
     /** Host-visible identity (stable for the life of the view). */
-    public final int idoridUid = nextUid++;
+    public final int indroidUid = nextUid++;
     private final Context mContext;
     private int mId = NO_ID;
     ViewParent mParent;
@@ -117,7 +117,7 @@ public class View implements Drawable.Callback {
     public final <T extends View> T findViewWithTag(Object t) { return (T) findWithTag(t); }
     View findWithTag(Object t) { return t != null && t.equals(tag) ? this : null; }
     View findViewTraversal(int id) { return id == mId ? this : null; }
-    View findByUid(int uid) { return uid == idoridUid ? this : null; }
+    View findByUid(int uid) { return uid == indroidUid ? this : null; }
     public final ViewParent getParent() { return mParent; }
     public View getRootView() { View v = this; while (v.mParent instanceof View) v = (View) v.mParent; return v; }
     public ViewGroup.LayoutParams getLayoutParams() { return mLayoutParams; }
@@ -151,10 +151,10 @@ public class View implements Drawable.Callback {
     boolean mAttached;
     public void addOnAttachStateChangeListener(OnAttachStateChangeListener l) { if (attachListeners == null) attachListeners = new java.util.ArrayList<OnAttachStateChangeListener>(); attachListeners.add(l); }
     public void removeOnAttachStateChangeListener(OnAttachStateChangeListener l) { if (attachListeners != null) attachListeners.remove(l); }
-    void idoridAttached() { if (mParent instanceof View && ((View) mParent).mAttached) attachTree(true); }
-    void idoridDetached() { if (mAttached) attachTree(false); }
-    /** idorid: attach/detach this subtree to the (single) window. */
-    public void idoridSetAttached(boolean a) { if (a != mAttached) attachTree(a); }
+    void indroidAttached() { if (mParent instanceof View && ((View) mParent).mAttached) attachTree(true); }
+    void indroidDetached() { if (mAttached) attachTree(false); }
+    /** indroid: attach/detach this subtree to the (single) window. */
+    public void indroidSetAttached(boolean a) { if (a != mAttached) attachTree(a); }
     void attachTree(boolean attach) {
         if (attach == mAttached) return;
         mAttached = attach;
@@ -281,8 +281,8 @@ public class View implements Drawable.Callback {
         if (mForeground != null) { mForeground.setBounds(0, 0, getWidth(), getHeight()); mForeground.draw(c); }
     }
     protected void dispatchDraw(android.graphics.Canvas c) {}
-    /** idorid: whether this node needs canvas ops (custom drawing or a non-color background). */
-    protected boolean idoridNeedsCanvas() {
+    /** indroid: whether this node needs canvas ops (custom drawing or a non-color background). */
+    protected boolean indroidNeedsCanvas() {
         return (mBackground != null && !(mBackground instanceof ColorDrawable)) || mForeground != null || VMViews.overridesOnDraw(this);
     }
     public void setAlpha(float a) { alpha = a; }
@@ -299,15 +299,15 @@ public class View implements Drawable.Callback {
     public boolean postDelayed(Runnable r, long ms) { return HANDLER.postDelayed(r, ms); }
     public boolean removeCallbacks(Runnable r) { HANDLER.removeCallbacks(r); return true; }
     public Handler getHandler() { return HANDLER; }
-    public void invalidate() { if (mAttached && idoridNeedsCanvas()) dirty = true; }
+    public void invalidate() { if (mAttached && indroidNeedsCanvas()) dirty = true; }
     public void postInvalidate() { invalidate(); }
     public void postInvalidateOnAnimation() { invalidate(); }
     public void postOnAnimation(Runnable r) { postDelayed(r,16); }
-    public static boolean idoridTakeDirty() { boolean d=dirty; dirty=false; return d; }
+    public static boolean indroidTakeDirty() { boolean d=dirty; dirty=false; return d; }
     protected void onSizeChanged(int w,int h,int oldw,int oldh) {}
     protected void onDraw(android.graphics.Canvas c) {}
-    /** idorid: host-reported size (legacy path; layout normally sets the frame). */
-    public void idoridSetSize(int w,int h) { if (w != getWidth() || h != getHeight()) setFrame(mLeft, mTop, mLeft + w, mTop + h); }
+    /** indroid: host-reported size (legacy path; layout normally sets the frame). */
+    public void indroidSetSize(int w,int h) { if (w != getWidth() || h != getHeight()) setFrame(mLeft, mTop, mLeft + w, mTop + h); }
 
     // ---------------------------------------------------------------- measure/layout
     public static class MeasureSpec {
@@ -333,8 +333,8 @@ public class View implements Drawable.Callback {
     private float translationX, translationY, scaleX = 1, scaleY = 1, rotation;
     private java.util.ArrayList<OnLayoutChangeListener> layoutListeners;
     private static boolean sLayoutRequested = true;
-    /** idorid: true once since the last call when any view asked for layout. */
-    public static boolean idoridTakeLayoutRequest() { boolean r = sLayoutRequested; sLayoutRequested = false; return r; }
+    /** indroid: true once since the last call when any view asked for layout. */
+    public static boolean indroidTakeLayoutRequest() { boolean r = sLayoutRequested; sLayoutRequested = false; return r; }
 
     public final void measure(int widthMeasureSpec, int heightMeasureSpec) {
         if (mForceLayout || widthMeasureSpec != mOldWidthSpec || heightMeasureSpec != mOldHeightSpec) {
@@ -843,14 +843,14 @@ public class View implements Drawable.Callback {
     public ViewOverlay getOverlay() { if (overlay == null) overlay = new ViewOverlay(); return overlay; }
     ViewOverlay overlay;
 
-    /** idorid: host type name. */
-    protected String idoridType() { return "View"; }
-    /** idorid: append type-specific JSON fields (each starting with ','). */
-    protected void idoridProps(StringBuilder sb) {}
+    /** indroid: host type name. */
+    protected String indroidType() { return "View"; }
+    /** indroid: append type-specific JSON fields (each starting with ','). */
+    protected void indroidProps(StringBuilder sb) {}
 
-    public final void idoridJson(StringBuilder sb) {
-        sb.append("{\"id\":").append(idoridUid);
-        Json.key(sb, "type"); Json.str(sb, idoridType());
+    public final void indroidJson(StringBuilder sb) {
+        sb.append("{\"id\":").append(indroidUid);
+        Json.key(sb, "type"); Json.str(sb, indroidType());
         Json.key(sb, "frame"); sb.append('[').append(mLeft).append(',').append(mTop).append(',').append(getWidth()).append(',').append(getHeight()).append(']');
         if (visibility != VISIBLE) { Json.key(sb, "visible"); sb.append(visibility == INVISIBLE ? "\"invisible\"" : "false"); }
         if (pl != 0 || pt != 0 || pr != 0 || pb != 0) { Json.key(sb, "padding"); sb.append('[').append(pl).append(',').append(pt).append(',').append(pr).append(',').append(pb).append(']'); }
@@ -884,8 +884,8 @@ public class View implements Drawable.Callback {
             }
         }
         if (touchListener != null || VMViews.overridesOnTouch(this)) { Json.key(sb, "touch"); sb.append("true"); }
-        if (idoridNeedsCanvas()) { Json.key(sb, "draw"); android.graphics.Canvas c = new android.graphics.Canvas(getWidth(),getHeight()); if (visibility == VISIBLE && getWidth() > 0 && getHeight() > 0) draw(c); sb.append(c.idoridOps()); }
-        idoridProps(sb);
+        if (indroidNeedsCanvas()) { Json.key(sb, "draw"); android.graphics.Canvas c = new android.graphics.Canvas(getWidth(),getHeight()); if (visibility == VISIBLE && getWidth() > 0 && getHeight() > 0) draw(c); sb.append(c.indroidOps()); }
+        indroidProps(sb);
         sb.append('}');
     }
     private static void dim(StringBuilder sb, int d) {

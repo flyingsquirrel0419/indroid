@@ -3,10 +3,10 @@ plugins {
     id("org.jetbrains.kotlin.android")
 }
 android {
-    namespace = "dev.idorid.showcase"
+    namespace = "dev.indroid.showcase"
     compileSdk = 35
     defaultConfig {
-        applicationId = "dev.idorid.showcase"
+        applicationId = "dev.indroid.showcase"
         minSdk = 24
         targetSdk = 35
         versionCode = 1

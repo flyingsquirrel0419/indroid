@@ -22,7 +22,7 @@ public class Path {
  public void rMoveTo(float dx,float dy) { moveTo(x+dx,y+dy); } public void rLineTo(float dx,float dy) { lineTo(x+dx,y+dy); }
  public void reset() { s=new StringBuilder(); x=y=startX=startY=0; fill=FillType.WINDING; }
  public void setFillType(FillType f) { fill=f; } public FillType getFillType() { return fill; }
- public String idoridPath() { return s.toString(); }
+ public String indroidPath() { return s.toString(); }
  public void addRect(float l,float t,float r,float b,Direction d) { moveTo(l,t); if(d==Direction.CW) { lineTo(r,t); lineTo(r,b); lineTo(l,b); } else { lineTo(l,b); lineTo(r,b); lineTo(r,t); } close(); }
  public void addRect(RectF r,Direction d) { addRect(r.left,r.top,r.right,r.bottom,d); }
  public void addCircle(float x,float y,float r,Direction d) { addOval(x-r,y-r,x+r,y+r,d); }

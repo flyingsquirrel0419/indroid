@@ -1,4 +1,4 @@
-//! Runs tests/oracle.sh (JVM vs idorid differential tests) when a JDK and the
+//! Runs tests/oracle.sh (JVM vs indroid differential tests) when a JDK and the
 //! Android build tools are available.
 
 #[test]

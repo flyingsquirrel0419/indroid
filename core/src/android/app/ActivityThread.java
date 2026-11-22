@@ -8,7 +8,7 @@ import android.view.VMViews;
 import java.util.ArrayList;
 
 /**
- * idorid host entry points. The Rust side calls these static methods; each
+ * indroid host entry points. The Rust side calls these static methods; each
  * returns the UI JSON described in docs/PLAN.md.
  */
 public final class ActivityThread {
@@ -107,7 +107,7 @@ public final class ActivityThread {
     public static String click(int uid) {
         try {
             if (!dialogs.isEmpty() && uid < 0 && uid >= -1000) {
-                dialogs.get(dialogs.size() - 1).idoridButton(uid <= -100 ? -uid - 100 : uid);
+                dialogs.get(dialogs.size() - 1).indroidButton(uid <= -100 ? -uid - 100 : uid);
             } else {
                 View v = find(uid);
                 if (v != null && v.isEnabled()) v.performClick();
@@ -116,7 +116,7 @@ public final class ActivityThread {
         return settle();
     }
 
-    public static String setSize(int uid,int w,int h) { try { View v=find(uid); if(v!=null) v.idoridSetSize(w,h); } catch(Throwable t) { fail(t); } return settle(); }
+    public static String setSize(int uid,int w,int h) { try { View v=find(uid); if(v!=null) v.indroidSetSize(w,h); } catch(Throwable t) { fail(t); } return settle(); }
     private static long touchDown;
     public static String touch(int uid,int action,float x,float y) { try { View v=find(uid); if(v!=null) { long now=android.os.SystemClock.uptimeMillis(); if(action==0) touchDown=now; v.dispatchTouchEvent(android.view.MotionEvent.obtain(touchDown,now,action,x,y,0)); } } catch(Throwable t) { fail(t); } return settle(); }
 
@@ -148,18 +148,18 @@ public final class ActivityThread {
     public static String setText(int uid, String text) {
         try {
             View v = find(uid);
-            if (v instanceof android.widget.TextView) ((android.widget.TextView) v).idoridUserText(text);
+            if (v instanceof android.widget.TextView) ((android.widget.TextView) v).indroidUserText(text);
         } catch (Throwable t) { fail(t); }
         return settle();
     }
 
     public static String editorAction(int uid) {
-        try { View v = find(uid); if (v instanceof android.widget.TextView) ((android.widget.TextView) v).idoridEditorAction(); } catch (Throwable t) { fail(t); }
+        try { View v = find(uid); if (v instanceof android.widget.TextView) ((android.widget.TextView) v).indroidEditorAction(); } catch (Throwable t) { fail(t); }
         return settle();
     }
 
     public static String setProgress(int uid, int p) {
-        try { View v = find(uid); if (v instanceof android.widget.SeekBar) ((android.widget.SeekBar) v).idoridUserProgress(p); } catch (Throwable t) { fail(t); }
+        try { View v = find(uid); if (v instanceof android.widget.SeekBar) ((android.widget.SeekBar) v).indroidUserProgress(p); } catch (Throwable t) { fail(t); }
         return settle();
     }
 
@@ -212,7 +212,7 @@ public final class ActivityThread {
     private static void layoutWindows(Activity t) {
         if (t != null) {
             View root = t.mContent;
-            root.idoridSetAttached(true);
+            root.indroidSetAttached(true);
             root.measure(View.MeasureSpec.makeMeasureSpec(winW, View.MeasureSpec.EXACTLY), View.MeasureSpec.makeMeasureSpec(winH, View.MeasureSpec.EXACTLY));
             root.layout(0, 0, root.getMeasuredWidth(), root.getMeasuredHeight());
         }
@@ -220,11 +220,11 @@ public final class ActivityThread {
             View c = dialogs.get(i).content;
             if (c == null) continue;
             if (c.getLayoutParams() == null) c.setLayoutParams(new android.view.ViewGroup.LayoutParams(-1, -2));
-            c.idoridSetAttached(true);
+            c.indroidSetAttached(true);
             c.measure(View.MeasureSpec.makeMeasureSpec(Math.max(0, winW - 80), View.MeasureSpec.EXACTLY), View.MeasureSpec.makeMeasureSpec(winH * 2 / 3, View.MeasureSpec.AT_MOST));
             c.layout(0, 0, c.getMeasuredWidth(), c.getMeasuredHeight());
         }
-        View.idoridTakeLayoutRequest();
+        View.indroidTakeLayoutRequest();
     }
 
     private static String dump(long nextMs) {
@@ -239,15 +239,15 @@ public final class ActivityThread {
         error = null;
         int nextPos = sb.length();
         sb.append(",\"depth\":").append(stack.size());
-        if (t != null) { sb.append(",\"root\":"); t.mContent.idoridJson(sb); }
+        if (t != null) { sb.append(",\"root\":"); t.mContent.indroidJson(sb); }
         if (!toasts.isEmpty()) {
             sb.append(",\"toasts\":[");
             for (int i = 0; i < toasts.size(); i++) { if (i > 0) sb.append(','); Json.str(sb, toasts.get(i)); }
             sb.append(']');
             toasts.clear();
         }
-        if (!dialogs.isEmpty()) { sb.append(",\"dialog\":"); dialogs.get(dialogs.size() - 1).idoridJson(sb); }
-        boolean dirty = View.idoridTakeDirty();
+        if (!dialogs.isEmpty()) { sb.append(",\"dialog\":"); dialogs.get(dialogs.size() - 1).indroidJson(sb); }
+        boolean dirty = View.indroidTakeDirty();
         if (dirty && (nextMs < 0 || nextMs > 16)) nextMs = 16;
         sb.insert(nextPos, ",\"next\":" + nextMs);
         sb.append('}');

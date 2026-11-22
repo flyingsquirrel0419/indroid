@@ -20,13 +20,13 @@ final class ContextImpl extends Context {
         if (theme == null) {
             theme = RES.newTheme();
             int t = themeRes != 0 ? themeRes : ActivityThread.nativeTheme("");
-            theme.applyStyle(t != 0 ? t : IDORID_DEFAULT_THEME, true);
+            theme.applyStyle(t != 0 ? t : INDROID_DEFAULT_THEME, true);
         }
         return theme;
     }
     public void setTheme(int resid) { themeRes = resid; if (theme != null) theme.applyStyle(resid, true); }
     public Object getSystemService(String name) {
-        if (LAYOUT_INFLATER_SERVICE.equals(name)) { if (inflater == null) inflater = android.view.LayoutInflater.idoridCreate(this); return inflater; }
+        if (LAYOUT_INFLATER_SERVICE.equals(name)) { if (inflater == null) inflater = android.view.LayoutInflater.indroidCreate(this); return inflater; }
         if (INPUT_METHOD_SERVICE.equals(name)) return new android.view.inputmethod.InputMethodManager();
         return null;
     }

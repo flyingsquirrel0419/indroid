@@ -4,7 +4,7 @@
 //! its own (differentially against qemu-aarch64-static).
 #![allow(dead_code)]
 
-use idorid_a64::{Access, AddressSpace, Cpu, Exit, PAGE_SIZE};
+use indroid_a64::{Access, AddressSpace, Cpu, Exit, PAGE_SIZE};
 use std::cell::{Cell, RefCell};
 use std::collections::HashMap;
 
@@ -14,7 +14,7 @@ type PageMap = HashMap<u64, (Box<[u8; 4096]>, u8)>;
 pub struct Pages {
     map: RefCell<PageMap>,
     gen: Cell<u64>,
-    aot: Cell<Option<(u64, idorid_a64::mem::AotUnit)>>,
+    aot: Cell<Option<(u64, indroid_a64::mem::AotUnit)>>,
 }
 
 const R: u8 = 1;
@@ -42,7 +42,7 @@ impl Pages {
         }
         self.gen.set(self.gen.get() + 1);
     }
-    pub fn set_aot(&self, page: u64, unit: idorid_a64::mem::AotUnit) {
+    pub fn set_aot(&self, page: u64, unit: indroid_a64::mem::AotUnit) {
         self.aot.set(Some((page, unit)));
         self.gen.set(self.gen.get() + 1);
     }
@@ -90,7 +90,7 @@ impl AddressSpace for Pages {
     fn generation(&self) -> u64 {
         self.gen.get()
     }
-    fn aot_unit(&self, page: u64) -> Option<idorid_a64::mem::AotUnit> {
+    fn aot_unit(&self, page: u64) -> Option<indroid_a64::mem::AotUnit> {
         self.aot
             .get()
             .and_then(|(p, unit)| (p == page).then_some(unit))
@@ -124,7 +124,7 @@ pub fn run_elf_with_aot(
     elf: &[u8],
     args: &[&str],
     max_insns: u64,
-    lookup: impl Fn(u64) -> Option<idorid_a64::mem::AotUnit>,
+    lookup: impl Fn(u64) -> Option<indroid_a64::mem::AotUnit>,
 ) -> Outcome {
     assert_eq!(&elf[..4], b"\x7fELF");
     assert_eq!(u16le(elf, 18), 183, "not aarch64");
@@ -232,7 +232,7 @@ pub fn run_elf_with_aot(
     let mut stdout = Vec::new();
     let mut mmap_next = 0x10_0000_0000u64;
     let start_brk = brk;
-    let sampling = std::env::var_os("IDORID_A64_SAMPLE").is_some();
+    let sampling = std::env::var_os("INDROID_A64_SAMPLE").is_some();
     let mut samples = [0u64; 16];
     loop {
         let left = max_insns.saturating_sub(cpu.retired);
@@ -349,7 +349,7 @@ pub fn run_elf_with_aot(
                     160 => {
                         // uname
                         let mut buf = vec![0u8; 65 * 6];
-                        for (i, s) in ["Linux", "idorid", "6.1.0", "#1", "aarch64", ""]
+                        for (i, s) in ["Linux", "indroid", "6.1.0", "#1", "aarch64", ""]
                             .iter()
                             .enumerate()
                         {
@@ -428,12 +428,12 @@ pub fn differential(name: &str, cflags: &[&str]) -> bool {
         for (i, (w, g)) in want.lines().zip(got.lines()).enumerate() {
             if w != g {
                 panic!(
-                    "{name}: first difference at line {}:\n qemu:   {w}\n idorid: {g}",
+                    "{name}: first difference at line {}:\n qemu:   {w}\n indroid: {g}",
                     i + 1
                 );
             }
         }
-        panic!("{name}: output length differs\nqemu:\n{want}\nidorid:\n{got}");
+        panic!("{name}: output length differs\nqemu:\n{want}\nindroid:\n{got}");
     }
     assert_eq!(Some(o.exit_code), q.status.code(), "{name}: exit code");
     eprintln!("{name}: ok, {} instructions", o.instructions);

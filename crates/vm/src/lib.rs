@@ -1,9 +1,9 @@
-//! idorid virtual machine: a JIT-free Dalvik bytecode interpreter.
+//! indroid virtual machine: a JIT-free Dalvik bytecode interpreter.
 
 use std::collections::HashMap;
 use std::rc::Rc;
 
-use idorid_dex::{access, Dex, EncodedValue, NO_INDEX};
+use indroid_dex::{access, Dex, EncodedValue, NO_INDEX};
 
 mod debuginfo;
 pub mod heap;
@@ -565,7 +565,7 @@ impl Vm {
             let mut arg_slots: u16 = if is_static { 0 } else { 1 };
             for t in dex.proto_params(mid.proto_idx as u32).map_err(bad)? {
                 let d = dex.type_descriptor(t as u32).map_err(bad)?;
-                arg_slots += idorid_dex::descriptor_slots(&d) as u16;
+                arg_slots += indroid_dex::descriptor_slots(&d) as u16;
             }
             let ret = sig.as_bytes()[sig.find(')').unwrap() + 1];
             let kind = if m.access_flags & access::NATIVE != 0 {
@@ -1353,7 +1353,7 @@ enum LoadErr {
 impl Vm {
     /// Lists framework classes, methods and fields referenced by the dex at
     /// `dex` that the bundled class library does not provide. Used by
-    /// `idorid missing` to plan compatibility work for an app.
+    /// `indroid missing` to plan compatibility work for an app.
     pub fn missing_report(&mut self, dex: u16) -> Vec<String> {
         let bytes = self.dexes[dex as usize].bytes.clone();
         let Ok(d) = Dex::parse(&bytes) else {

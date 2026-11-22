@@ -2,7 +2,7 @@
 //! fork, and a page cache that shares read-only file pages between processes.
 
 use crate::vfs::FileRef;
-use idorid_a64::{Access, AddressSpace, PAGE_SIZE};
+use indroid_a64::{Access, AddressSpace, PAGE_SIZE};
 use parking_lot::{Mutex, RwLock};
 use std::cell::UnsafeCell;
 use std::collections::{BTreeMap, HashMap};
@@ -732,13 +732,13 @@ impl AddressSpace for Mm {
     fn translate(&self, page: u64, access: Access) -> Option<*mut u8> {
         self.page_for(page, access == Access::Write, Some(access))
     }
-    fn aot_unit(&self, page: u64) -> Option<idorid_a64::mem::AotUnit> {
-        if !idorid_aot::HAS_UNITS {
+    fn aot_unit(&self, page: u64) -> Option<indroid_a64::mem::AotUnit> {
+        if !indroid_aot::HAS_UNITS {
             return None;
         }
         // AOT is experimental: opt in until it reliably beats the block cache.
         static ENABLED: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
-        if !*ENABLED.get_or_init(|| std::env::var_os("IDORID_ENABLE_AOT").is_some()) {
+        if !*ENABLED.get_or_init(|| std::env::var_os("INDROID_ENABLE_AOT").is_some()) {
             return None;
         }
         let addr = page.checked_mul(PAGE)?;
@@ -751,7 +751,7 @@ impl AddressSpace for Mm {
             // Optional filter makes it possible to measure individual units.
             static ONLY: std::sync::OnceLock<Option<u64>> = std::sync::OnceLock::new();
             if let Some(selected) = *ONLY.get_or_init(|| {
-                std::env::var("IDORID_AOT_ONLY_OFFSET")
+                std::env::var("INDROID_AOT_ONLY_OFFSET")
                     .ok()
                     .and_then(|s| u64::from_str_radix(s.trim_start_matches("0x"), 16).ok())
             }) {
@@ -759,7 +759,7 @@ impl AddressSpace for Mm {
                     return None;
                 }
             }
-            idorid_aot::lookup(&vma.name, file_offset)
+            indroid_aot::lookup(&vma.name, file_offset)
         } else {
             None
         }

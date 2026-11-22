@@ -369,12 +369,12 @@ public class LinearLayout extends ViewGroup {
         }
     }
 
-    protected String idoridType() { return "LinearLayout"; }
-    protected void idoridProps(StringBuilder sb) {
+    protected String indroidType() { return "LinearLayout"; }
+    protected void indroidProps(StringBuilder sb) {
         Json.key(sb, "orientation"); Json.str(sb, orientation == VERTICAL ? "vertical" : "horizontal");
         String g = Gravity.describe(gravity == (Gravity.START | Gravity.TOP) ? 0 : gravity);
         if (g != null) { Json.key(sb, "gravity"); Json.str(sb, g); }
-        super.idoridProps(sb);
+        super.indroidProps(sb);
     }
  public void onRtlPropertiesChanged(int direction) {}
 }

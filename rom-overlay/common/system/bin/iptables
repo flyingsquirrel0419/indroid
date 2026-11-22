@@ -1,5 +1,5 @@
 #!/system/bin/sh
-# idorid neo: no netfilter in the in-process kernel. iptables/ip6tables
+# indroid neo: no netfilter in the in-process kernel. iptables/ip6tables
 # (and their -restore/-save personalities, which are symlinks to this file)
 # accept everything; the -restore daemon mode answers netd's "#PING" probes.
 case "${0##*/}" in

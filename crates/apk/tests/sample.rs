@@ -1,4 +1,4 @@
-use idorid_apk::{axml::Document, resources::DimensionUnit, Apk, ResValue};
+use indroid_apk::{axml::Document, resources::DimensionUnit, Apk, ResValue};
 use std::io::{Cursor, Write};
 
 #[test]
@@ -6,10 +6,10 @@ fn sample_apk() {
     let apk = Apk::open(include_bytes!("../../../tests/fixtures/sample.apk").to_vec()).unwrap();
     assert!(!apk.dex_files().is_empty());
     let manifest = apk.manifest().unwrap();
-    assert_eq!(manifest.package, "dev.idorid.sample");
+    assert_eq!(manifest.package, "dev.indroid.sample");
     assert_eq!(
         manifest.main_activity.as_deref(),
-        Some("dev.idorid.sample.MainActivity")
+        Some("dev.indroid.sample.MainActivity")
     );
     assert_eq!(manifest.min_sdk, Some(21));
     let resources = apk.resources().unwrap();
@@ -17,7 +17,7 @@ fn sample_apk() {
         ResValue::Reference(id) => id,
         other => panic!("unexpected {other:?}"),
     };
-    assert_eq!(resources.string(label).as_deref(), Some("Idorid Sample"));
+    assert_eq!(resources.string(label).as_deref(), Some("Indroid Sample"));
     let id = resources.id_by_name("layout", "activity_main").unwrap();
     assert_eq!(resources.name(id), Some("layout/activity_main"));
     let path = resources.file_path(id).unwrap();
@@ -95,7 +95,7 @@ fn dex_order_and_invalid_inputs() {
     );
     for n in 0..32 {
         assert!(Document::parse(&vec![0; n]).is_err());
-        assert!(idorid_apk::Resources::parse(&vec![0; n]).is_err());
+        assert!(indroid_apk::Resources::parse(&vec![0; n]).is_err());
     }
 }
 
@@ -109,7 +109,7 @@ fn truncated_real_files_are_rejected_without_panicking() {
                 if name == "AndroidManifest.xml" {
                     assert!(Document::parse(&bytes[..n]).is_err());
                 } else {
-                    assert!(idorid_apk::Resources::parse(&bytes[..n]).is_err());
+                    assert!(indroid_apk::Resources::parse(&bytes[..n]).is_err());
                 }
             });
             assert!(result.is_ok(), "panic at {name} length {n}");

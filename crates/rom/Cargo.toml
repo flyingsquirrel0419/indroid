@@ -1,6 +1,6 @@
 [package]
-name = "idorid-rom"
-description = "Installs an Android arm64 system image into the tree idorid neo boots from (no external tools)"
+name = "indroid-rom"
+description = "Installs an Android arm64 system image into the tree indroid neo boots from (no external tools)"
 version.workspace = true
 edition.workspace = true
 license.workspace = true

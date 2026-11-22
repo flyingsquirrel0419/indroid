@@ -71,13 +71,13 @@ public abstract class AbsListView extends AdapterView<ListAdapter> {
             if (++col == cols) { col = 0; y += rowH + vSpacing(); rowH = 0; }
         }
     }
-    protected String idoridType() { return "ScrollView"; }
-    protected void idoridProps(StringBuilder sb) {
+    protected String indroidType() { return "ScrollView"; }
+    protected void indroidProps(StringBuilder sb) {
         android.view.Json.key(sb, "children");
         int w = Math.max(0, getWidth() - getPaddingLeft() - getPaddingRight());
         sb.append("[{\"id\":0,\"type\":\"FrameLayout\",\"frame\":[").append(getPaddingLeft()).append(',').append(getPaddingTop()).append(',').append(w).append(',').append(contentHeight)
           .append("],\"orientation\":\"vertical\",\"width\":\"match\",\"height\":\"wrap\"");
-        super.idoridProps(sb);
+        super.indroidProps(sb);
         sb.append("}]");
     }
     public interface SelectionBoundsAdjuster { void adjustListItemSelectionBounds(android.graphics.Rect rect); }
