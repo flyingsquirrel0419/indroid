@@ -22,7 +22,7 @@ public class TypedArray implements AutoCloseable {
     private String prim(int i) {
         String v = v(i);
         for (int guard = 0; guard < 8 && v != null && VMValue.kind(v) == 'r'; guard++) {
-            String r = res.idoridValue(VMValue.intOf(v, 0));
+            String r = res.indroidValue(VMValue.intOf(v, 0));
             if (r == null) return v;
             if (VMValue.kind(r) == 'a' && theme != null) r = theme.resolveRef(r);
             v = r;
@@ -48,13 +48,13 @@ public class TypedArray implements AutoCloseable {
     public int getColor(int i, int def) {
         String v = prim(i);
         if (v == null) return def;
-        if (VMValue.kind(v) == 'p') { ColorStateList c = ColorStateList.idoridInflate(res, VMValue.body(v), theme); return c == null ? def : c.getDefaultColor(); }
+        if (VMValue.kind(v) == 'p') { ColorStateList c = ColorStateList.indroidInflate(res, VMValue.body(v), theme); return c == null ? def : c.getDefaultColor(); }
         return VMValue.intOf(v, def);
     }
     public ColorStateList getColorStateList(int i) {
         String v = prim(i);
         if (v == null) return null;
-        if (VMValue.kind(v) == 'p') return ColorStateList.idoridInflate(res, VMValue.body(v), theme);
+        if (VMValue.kind(v) == 'p') return ColorStateList.indroidInflate(res, VMValue.body(v), theme);
         char k = VMValue.kind(v);
         if (k == 'c' || k == 'i') return ColorStateList.valueOf(VMValue.intOf(v, 0));
         return null;
@@ -99,7 +99,7 @@ public class TypedArray implements AutoCloseable {
     public boolean hasValueOrEmpty(int i) { return v(i) != null; }
     public TypedValue peekValue(int i) { String v = v(i); if (v == null) return null; TypedValue t = new TypedValue(); res.fillValue(v, t, true); return t; }
     public boolean getValue(int i, TypedValue out) { String v = v(i); if (v == null) return false; res.fillValue(v, out, true); return true; }
-    public String getPositionDescription() { return "idorid"; }
+    public String getPositionDescription() { return "indroid"; }
     public int getChangingConfigurations() { return 0; }
     public void recycle() { recycled = true; }
     public void close() { recycle(); }

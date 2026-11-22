@@ -1,4 +1,4 @@
-//! C API for idorid neo (real Android): install a ROM, boot it, stream the
+//! C API for indroid neo (real Android): install a ROM, boot it, stream the
 //! console/logcat, inject touches.
 
 use std::ffi::{c_char, c_void, CStr};
@@ -11,7 +11,7 @@ struct Sink(NeoTextFn, usize);
 unsafe impl Send for Sink {}
 unsafe impl Sync for Sink {}
 
-static KERNEL: Mutex<Option<Arc<idorid_kernel::Kernel>>> = Mutex::new(None);
+static KERNEL: Mutex<Option<Arc<indroid_kernel::Kernel>>> = Mutex::new(None);
 
 unsafe fn path(p: *const c_char) -> Option<std::path::PathBuf> {
     if p.is_null() {
@@ -26,7 +26,7 @@ unsafe fn path(p: *const c_char) -> Option<std::path::PathBuf> {
 /// # Safety
 /// Paths must be NUL-terminated UTF-8.
 #[no_mangle]
-pub unsafe extern "C" fn idorid_neo_install(
+pub unsafe extern "C" fn indroid_neo_install(
     zip: *const c_char,
     out: *const c_char,
     work: *const c_char,
@@ -37,7 +37,7 @@ pub unsafe extern "C" fn idorid_neo_install(
         return -1;
     };
     let mut cb = |m: &str| progress(ctx, m.as_ptr(), m.len());
-    let r = idorid_rom::install(&zip, &out, &work, &mut cb);
+    let r = indroid_rom::install(&zip, &out, &work, &mut cb);
     let _ = std::fs::remove_dir_all(&work);
     match r {
         Ok(()) => 0,
@@ -56,7 +56,7 @@ pub unsafe extern "C" fn idorid_neo_install(
 /// # Safety
 /// Paths must be NUL-terminated UTF-8; `log` must stay valid while running.
 #[no_mangle]
-pub unsafe extern "C" fn idorid_neo_boot(
+pub unsafe extern "C" fn indroid_neo_boot(
     rom: *const c_char,
     state: *const c_char,
     overlays: *const c_char,
@@ -79,13 +79,13 @@ pub unsafe extern "C" fn idorid_neo_boot(
         })
         .unwrap_or_default();
     if let Some(c) = path(cmdline) {
-        std::env::set_var("IDORID_CMDLINE", c);
+        std::env::set_var("INDROID_CMDLINE", c);
     }
     // Mirror logcat into the console sink.
-    std::env::set_var("IDORID_LOGCAT", "1");
+    std::env::set_var("INDROID_LOGCAT", "1");
     let sink = Arc::new(Sink(log, ctx as usize));
     let s2 = sink.clone();
-    let k = idorid_kernel::Kernel::new(idorid_kernel::Config {
+    let k = indroid_kernel::Kernel::new(indroid_kernel::Config {
         rom,
         state,
         overlays,
@@ -109,7 +109,7 @@ pub unsafe extern "C" fn idorid_neo_boot(
 
 /// Touchscreen input in screen pixels (1080x2340 device space); id < 0 lifts.
 #[no_mangle]
-pub extern "C" fn idorid_neo_touch(slot: i32, id: i32, x: i32, y: i32) {
+pub extern "C" fn indroid_neo_touch(slot: i32, id: i32, x: i32, y: i32) {
     if let Some(k) = KERNEL.lock().unwrap().as_ref() {
         k.touchscreen.touch(slot, id, x, y);
     }
@@ -117,7 +117,7 @@ pub extern "C" fn idorid_neo_touch(slot: i32, id: i32, x: i32, y: i32) {
 
 /// Guest instructions executed so far (for a status display).
 #[no_mangle]
-pub extern "C" fn idorid_neo_instructions() -> u64 {
+pub extern "C" fn indroid_neo_instructions() -> u64 {
     KERNEL
         .lock()
         .unwrap()

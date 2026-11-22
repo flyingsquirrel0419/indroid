@@ -147,7 +147,7 @@ impl BlockCache {
                     access: Access::Exec,
                 })?;
             static DISABLE_AOT: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
-            if !*DISABLE_AOT.get_or_init(|| std::env::var_os("IDORID_DISABLE_AOT").is_some()) {
+            if !*DISABLE_AOT.get_or_init(|| std::env::var_os("INDROID_DISABLE_AOT").is_some()) {
                 if let Some(unit) = c.tlb.executable_unit(mem, pc) {
                     self.slots[index] = Some(Block {
                         pc,

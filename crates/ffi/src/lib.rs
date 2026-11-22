@@ -1,5 +1,5 @@
 //! Host bridge: loads an APK into the VM, drives the Activity lifecycle, and
-//! exposes a C ABI (`include/idorid.h`) for the iOS app.
+//! exposes a C ABI (`include/indroid.h`) for the iOS app.
 
 use std::cell::RefCell;
 use std::ffi::{c_char, CStr, CString};
@@ -16,17 +16,17 @@ static TEXT_MEASURER: AtomicPtr<()> = AtomicPtr::new(std::ptr::null_mut());
 
 /// Set or clear the process-wide text measurement callback.
 #[no_mangle]
-pub extern "C" fn idorid_set_text_measurer(callback: Option<MeasureTextFn>) {
+pub extern "C" fn indroid_set_text_measurer(callback: Option<MeasureTextFn>) {
     TEXT_MEASURER.store(
         callback.map_or(std::ptr::null_mut(), |f| f as *mut ()),
         Ordering::Release,
     );
 }
 
-use idorid_apk::axml::{Document, Element};
-use idorid_apk::resources::{DimensionUnit, ResValue};
-use idorid_apk::{Apk, Manifest, Resources};
-use idorid_vm::{ResourceProvider, Throw, Vm};
+use indroid_apk::axml::{Document, Element};
+use indroid_apk::resources::{DimensionUnit, ResValue};
+use indroid_apk::{Apk, Manifest, Resources};
+use indroid_vm::{ResourceProvider, Throw, Vm};
 
 /// Resources backed by the APK.
 pub struct ApkResources {
@@ -160,7 +160,7 @@ impl ApkResources {
             }
             ResValue::Fraction { value, unit } => format!(
                 "q:{value}{}",
-                if matches!(unit, idorid_apk::resources::FractionUnit::Parent) {
+                if matches!(unit, indroid_apk::resources::FractionUnit::Parent) {
                     "p"
                 } else {
                     ""
@@ -312,7 +312,7 @@ impl DirStorage {
     }
 }
 
-impl idorid_vm::Storage for DirStorage {
+impl indroid_vm::Storage for DirStorage {
     fn load(&self, path: &str) -> Option<String> {
         std::fs::read_to_string(self.path(path)?).ok()
     }
@@ -373,7 +373,7 @@ impl App {
         vm.text_measurer = Some(Box::new(|text, size, flags, max_width| {
             let ptr = TEXT_MEASURER.load(Ordering::Acquire);
             if ptr.is_null() {
-                return idorid_vm::metrics::approximate(text, size, flags, max_width);
+                return indroid_vm::metrics::approximate(text, size, flags, max_width);
             }
             let text = CString::new(text.replace('\0', "\u{fffd}")).unwrap();
             let mut out = [0.0; 2];
@@ -407,7 +407,11 @@ impl App {
             }
         });
         if echo {
-            eprintln!("[idorid] loaded {} in {:?}", manifest.package, t0.elapsed());
+            eprintln!(
+                "[indroid] loaded {} in {:?}",
+                manifest.package,
+                t0.elapsed()
+            );
         }
         Ok(App {
             vm,
@@ -448,7 +452,7 @@ impl App {
                 .unwrap_or_else(|| error_json("no UI")),
             Err(Throw) => {
                 let e = self.vm.describe_exception();
-                self.log.borrow_mut().push_str(&format!("E/idorid: {e}\n"));
+                self.log.borrow_mut().push_str(&format!("E/indroid: {e}\n"));
                 error_json(&e)
             }
         }
@@ -610,7 +614,7 @@ pub fn json_str(s: &str) -> String {
 
 fn error_json(msg: &str) -> String {
     format!(
-        "{{\"title\":\"idorid\",\"finished\":false,\"error\":{},\"next\":-1}}",
+        "{{\"title\":\"indroid\",\"finished\":false,\"error\":{},\"next\":-1}}",
         json_str(msg)
     )
 }
@@ -620,7 +624,7 @@ fn error_json(msg: &str) -> String {
 // ----------------------------------------------------------------------
 
 /// Opaque handle for C.
-pub struct IdoridVm(App);
+pub struct IndroidVm(App);
 
 fn to_c(s: String) -> *mut c_char {
     CString::new(s.replace('\0', ""))
@@ -645,17 +649,17 @@ fn guard(f: impl FnOnce() -> String) -> *mut c_char {
 /// # Safety
 /// `apk` must point to `len` readable bytes; `err` may be null.
 #[no_mangle]
-pub unsafe extern "C" fn idorid_vm_new(
+pub unsafe extern "C" fn indroid_vm_new(
     apk: *const u8,
     len: usize,
     err: *mut *mut c_char,
-) -> *mut IdoridVm {
+) -> *mut IndroidVm {
     if apk.is_null() {
         return std::ptr::null_mut();
     }
     let bytes = std::slice::from_raw_parts(apk, len).to_vec();
     match catch_unwind(AssertUnwindSafe(|| App::load(bytes, false))) {
-        Ok(Ok(app)) => Box::into_raw(Box::new(IdoridVm(app))),
+        Ok(Ok(app)) => Box::into_raw(Box::new(IndroidVm(app))),
         Ok(Err(e)) => {
             if !err.is_null() {
                 *err = to_c(e);
@@ -675,53 +679,53 @@ macro_rules! vm_fn {
     ($(#[$m:meta])* $name:ident ($($arg:ident : $ty:ty),*) => |$app:ident| $body:expr) => {
         $(#[$m])*
         /// # Safety
-        /// `vm` must come from `idorid_vm_new` and be used from one thread.
+        /// `vm` must come from `indroid_vm_new` and be used from one thread.
         #[no_mangle]
-        pub unsafe extern "C" fn $name(vm: *mut IdoridVm $(, $arg: $ty)*) -> *mut c_char {
-            let Some(IdoridVm($app)) = vm.as_mut() else { return std::ptr::null_mut() };
+        pub unsafe extern "C" fn $name(vm: *mut IndroidVm $(, $arg: $ty)*) -> *mut c_char {
+            let Some(IndroidVm($app)) = vm.as_mut() else { return std::ptr::null_mut() };
             guard(|| $body)
         }
     };
 }
 
-vm_fn!(idorid_vm_launch() => |app| app.launch());
-vm_fn!(idorid_vm_set_window_size(w: i32, h: i32) => |app| app.set_window_size(w, h));
-vm_fn!(idorid_vm_set_size(view_id: i32, w: i32, h: i32) => |app| app.set_size(view_id, w, h));
-vm_fn!(idorid_vm_touch(view_id: i32, action: i32, x: f32, y: f32) => |app| app.touch(view_id, action, x, y));
-vm_fn!(idorid_vm_touch_window(action: i32, x: f32, y: f32) => |app| app.touch_window(action, x, y));
-vm_fn!(idorid_vm_scroll(view_id: i32, x: i32, y: i32) => |app| app.scroll(view_id, x, y));
-vm_fn!(idorid_vm_click(view_id: i32) => |app| app.click(view_id));
-vm_fn!(idorid_vm_long_click(view_id: i32) => |app| app.long_click(view_id));
-vm_fn!(idorid_vm_editor_action(view_id: i32) => |app| app.editor_action(view_id));
-vm_fn!(idorid_vm_set_progress(view_id: i32, progress: i32) => |app| app.set_progress(view_id, progress));
-vm_fn!(idorid_vm_back() => |app| app.back());
-vm_fn!(idorid_vm_tick() => |app| app.tick());
-vm_fn!(idorid_vm_take_log() => |app| app.take_log());
-vm_fn!(idorid_vm_info() => |app| app.info_json());
-vm_fn!(idorid_vm_set_data_dir(path: *const c_char) => |app| {
+vm_fn!(indroid_vm_launch() => |app| app.launch());
+vm_fn!(indroid_vm_set_window_size(w: i32, h: i32) => |app| app.set_window_size(w, h));
+vm_fn!(indroid_vm_set_size(view_id: i32, w: i32, h: i32) => |app| app.set_size(view_id, w, h));
+vm_fn!(indroid_vm_touch(view_id: i32, action: i32, x: f32, y: f32) => |app| app.touch(view_id, action, x, y));
+vm_fn!(indroid_vm_touch_window(action: i32, x: f32, y: f32) => |app| app.touch_window(action, x, y));
+vm_fn!(indroid_vm_scroll(view_id: i32, x: i32, y: i32) => |app| app.scroll(view_id, x, y));
+vm_fn!(indroid_vm_click(view_id: i32) => |app| app.click(view_id));
+vm_fn!(indroid_vm_long_click(view_id: i32) => |app| app.long_click(view_id));
+vm_fn!(indroid_vm_editor_action(view_id: i32) => |app| app.editor_action(view_id));
+vm_fn!(indroid_vm_set_progress(view_id: i32, progress: i32) => |app| app.set_progress(view_id, progress));
+vm_fn!(indroid_vm_back() => |app| app.back());
+vm_fn!(indroid_vm_tick() => |app| app.tick());
+vm_fn!(indroid_vm_take_log() => |app| app.take_log());
+vm_fn!(indroid_vm_info() => |app| app.info_json());
+vm_fn!(indroid_vm_set_data_dir(path: *const c_char) => |app| {
     if !path.is_null() {
         let p = CStr::from_ptr(path).to_string_lossy().into_owned();
         app.set_data_dir(&p);
     }
     String::from("{}")
 });
-vm_fn!(idorid_vm_set_text(view_id: i32, utf8: *const c_char) => |app| {
+vm_fn!(indroid_vm_set_text(view_id: i32, utf8: *const c_char) => |app| {
     let text = if utf8.is_null() { String::new() } else { CStr::from_ptr(utf8).to_string_lossy().into_owned() };
     app.set_text(view_id, &text)
 });
 
 /// Bitmap bytes for a drawable resource id; NULL if absent or not a bitmap.
-/// Free with `idorid_bytes_free(ptr, len)`.
+/// Free with `indroid_bytes_free(ptr, len)`.
 ///
 /// # Safety
-/// `vm` must come from `idorid_vm_new`; `len` must be writable.
+/// `vm` must come from `indroid_vm_new`; `len` must be writable.
 #[no_mangle]
-pub unsafe extern "C" fn idorid_vm_resource_bytes(
-    vm: *mut IdoridVm,
+pub unsafe extern "C" fn indroid_vm_resource_bytes(
+    vm: *mut IndroidVm,
     id: i32,
     len: *mut usize,
 ) -> *mut u8 {
-    let Some(IdoridVm(app)) = vm.as_mut() else {
+    let Some(IndroidVm(app)) = vm.as_mut() else {
         return std::ptr::null_mut();
     };
     match catch_unwind(AssertUnwindSafe(|| app.resource_bytes(id as u32))) {
@@ -739,27 +743,27 @@ pub unsafe extern "C" fn idorid_vm_resource_bytes(
 }
 
 /// # Safety
-/// `ptr`/`len` must come from `idorid_vm_resource_bytes`.
+/// `ptr`/`len` must come from `indroid_vm_resource_bytes`.
 #[no_mangle]
-pub unsafe extern "C" fn idorid_bytes_free(ptr: *mut u8, len: usize) {
+pub unsafe extern "C" fn indroid_bytes_free(ptr: *mut u8, len: usize) {
     if !ptr.is_null() {
         drop(Box::from_raw(std::ptr::slice_from_raw_parts_mut(ptr, len)));
     }
 }
 
 /// # Safety
-/// `s` must come from an idorid function (or be null).
+/// `s` must come from an indroid function (or be null).
 #[no_mangle]
-pub unsafe extern "C" fn idorid_string_free(s: *mut c_char) {
+pub unsafe extern "C" fn indroid_string_free(s: *mut c_char) {
     if !s.is_null() {
         drop(CString::from_raw(s));
     }
 }
 
 /// # Safety
-/// `vm` must come from `idorid_vm_new` (or be null); it is invalid afterwards.
+/// `vm` must come from `indroid_vm_new` (or be null); it is invalid afterwards.
 #[no_mangle]
-pub unsafe extern "C" fn idorid_vm_free(vm: *mut IdoridVm) {
+pub unsafe extern "C" fn indroid_vm_free(vm: *mut IndroidVm) {
     if !vm.is_null() {
         drop(Box::from_raw(vm));
     }

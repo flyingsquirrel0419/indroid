@@ -3,7 +3,7 @@ package android.view;
 import android.util.AttributeSet;
 
 /**
- * idorid: attributes of one inflated XML element. Values arrive pre-resolved
+ * indroid: attributes of one inflated XML element. Values arrive pre-resolved
  * from the VM with a type prefix: s: string, i: int, d: dimension ("16dp"),
  * c: color (int), r: resource reference (int), b: boolean, f: float.
  */
@@ -22,8 +22,8 @@ public final class XmlAttrs implements AttributeSet {
         }
         names = n; values = v; ctx = c;
     }
-    /** idorid: attributes with known resource ids (from a parsed XML file). */
-    public static XmlAttrs idoridFrom(String[] n, int[] ids, String[] v, android.content.Context c) {
+    /** indroid: attributes with known resource ids (from a parsed XML file). */
+    public static XmlAttrs indroidFrom(String[] n, int[] ids, String[] v, android.content.Context c) {
         String[] names = new String[n.length];
         for (int i = 0; i < n.length; i++) names[i] = ids[i] != 0 ? n[i] + '\u0005' + ids[i] : n[i];
         return new XmlAttrs(names, v.clone(), c);
@@ -38,15 +38,15 @@ public final class XmlAttrs implements AttributeSet {
     /** Encoded value with ?attr resolved through the inflating context's theme. */
     public String raw(String name) { int i = index(name); return i < 0 ? null : resolved(i); }
     /** The value as written in the XML (may be "a:<attr>"). */
-    public String idoridRawValue(int i) { return values[i]; }
+    public String indroidRawValue(int i) { return values[i]; }
     String resolved(int i) {
         String v = values[i];
         if (v == null || !v.startsWith("a:") || ctx == null) return v;
         android.content.res.Resources.Theme t = ctx.getTheme();
-        String r = t == null ? null : t.idoridAttr(android.content.res.VMValue.intOf(v, 0));
+        String r = t == null ? null : t.indroidAttr(android.content.res.VMValue.intOf(v, 0));
         if (r == null) return null;
         if (r.startsWith("r:") && REF_NAMES.indexOf("," + names[i] + ",") < 0) {
-            String p = ctx.getResources().idoridValue(android.content.res.VMValue.intOf(r, 0));
+            String p = ctx.getResources().indroidValue(android.content.res.VMValue.intOf(r, 0));
             if (p != null && !p.startsWith("p:") && !p.startsWith("r:")) return p;
         }
         return r;
@@ -70,7 +70,7 @@ public final class XmlAttrs implements AttributeSet {
             }
         } catch (RuntimeException e) { return def; }
     }
-    /** Dimension in idorid pixels (1px == 1dp == 1sp). match_parent/wrap_content arrive as i:-1 / i:-2. */
+    /** Dimension in indroid pixels (1px == 1dp == 1sp). match_parent/wrap_content arrive as i:-1 / i:-2. */
     public float dimension(String name, float def) {
         String v = raw(name);
         if (v == null) return def;
@@ -90,7 +90,7 @@ public final class XmlAttrs implements AttributeSet {
     public String getAttributeName(int i) { return names[i]; }
     public String getAttributeValue(int i) { String v = resolved(i); return v == null ? null : v.length() >= 2 ? v.substring(2) : v; }
     public String getAttributeValue(String ns, String name) { return string(name); }
-    public String getPositionDescription() { return "idorid layout"; }
+    public String getPositionDescription() { return "indroid layout"; }
     public int getAttributeNameResource(int i) { return ids[i]; }
     public int getAttributeListValue(String ns, String a, String[] opts, int d) {
         String v = string(a); if (v == null) return d;

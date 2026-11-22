@@ -158,10 +158,10 @@ public class TextView extends View {
     public void setSelection(int i) { selectionStart=selectionEnd=i; onSelectionChanged(i,i); }
     public void addTextChangedListener(TextWatcher w) { if (watchers == null) watchers = new ArrayList<TextWatcher>(); watchers.add(w); }
     public void removeTextChangedListener(TextWatcher w) { if (watchers != null) watchers.remove(w); }
-    /** idorid: user typed in the host field. */
-    public void idoridUserText(String t) { setText(t); }
-    /** idorid: return key pressed. */
-    public void idoridEditorAction() { if (editorListener != null) editorListener.onEditorAction(this, 6, null); }
+    /** indroid: user typed in the host field. */
+    public void indroidUserText(String t) { setText(t); }
+    /** indroid: return key pressed. */
+    public void indroidEditorAction() { if (editorListener != null) editorListener.onEditorAction(this, 6, null); }
 
     /** Text as shown (all-caps and password transforms applied). */
     CharSequence displayText() {
@@ -183,7 +183,7 @@ public class TextView extends View {
         int hMode = MeasureSpec.getMode(hs), hSize = MeasureSpec.getSize(hs);
         String shown = displayText().toString();
         int padH = getPaddingLeft() + getPaddingRight(), padV = getPaddingTop() + getPaddingBottom();
-        int extraW = idoridExtraWidth();
+        int extraW = indroidExtraWidth();
         int width;
         if (wMode == MeasureSpec.EXACTLY) width = wSize;
         else {
@@ -197,22 +197,22 @@ public class TextView extends View {
         int height;
         if (hMode == MeasureSpec.EXACTLY) height = hSize;
         else {
-            height = Math.max(android.view.VMText.heightOf(m), idoridExtraHeight()) + padV;
+            height = Math.max(android.view.VMText.heightOf(m), indroidExtraHeight()) + padV;
             height = Math.max(height, getSuggestedMinimumHeight());
             if (hMode == MeasureSpec.AT_MOST) height = Math.min(height, hSize);
         }
         setMeasuredDimension(width, height);
     }
-    /** idorid: room for a compound button / switch beside the text. */
-    int idoridExtraWidth() { return 0; }
-    int idoridExtraHeight() { return 0; }
+    /** indroid: room for a compound button / switch beside the text. */
+    int indroidExtraWidth() { return 0; }
+    int indroidExtraHeight() { return 0; }
     public int getLineHeight() { return lineHeight>0 ? lineHeight : Math.round(textSize * 1.17f); }
     public int getLineCount() { return Math.max(1, android.view.VMText.heightOf(android.view.VMText.measure(displayText().toString(), textSize, textFlags(), Math.max(1, getWidth() - getPaddingLeft() - getPaddingRight()))) / Math.max(1, getLineHeight())); }
     public int getBaseline() { return getPaddingTop() + Math.round(textSize * 0.93f); }
     public int getMaxLines() { return maxLines; }
     public boolean isAllCaps() { return allCaps; }
-    protected String idoridType() { return "TextView"; }
-    protected void idoridProps(StringBuilder sb) {
+    protected String indroidType() { return "TextView"; }
+    protected void indroidProps(StringBuilder sb) {
         Json.key(sb, "text"); Json.str(sb, allCaps ? text.toString().toUpperCase() : text);
         if (hint != null) { Json.key(sb, "hint"); Json.str(sb, hint); }
         Json.key(sb, "textSize"); Json.num(sb, textSize);

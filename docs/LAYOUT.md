@@ -30,11 +30,11 @@ Only the host knows real font metrics. The VM asks through
 `Vm::text_measurer` (set by the FFI from a host callback):
 
 ```c
-typedef void (*idorid_measure_text_fn)(const char *utf8, float size, int32_t flags,
+typedef void (*indroid_measure_text_fn)(const char *utf8, float size, int32_t flags,
                                        float max_width, float out[2]);
 // out = { width, height }; flags bit0 bold, bit1 italic, bit2 monospace,
 // bits 8..15 maxLines (0 = unlimited)
-void idorid_set_text_measurer(idorid_measure_text_fn fn);
+void indroid_set_text_measurer(indroid_measure_text_fn fn);
 ```
 
 Without a callback (CLI, tests) a deterministic approximation is used
@@ -44,7 +44,7 @@ Without a callback (CLI, tests) a deterministic approximation is used
 
 ```c
 // Content area in points (safe area already removed). Returns new UI JSON.
-char *idorid_vm_set_window_size(IdoridVm *vm, int32_t w, int32_t h);
+char *indroid_vm_set_window_size(IndroidVm *vm, int32_t w, int32_t h);
 ```
 
 Default 390 x 760 until the host reports.
@@ -54,7 +54,7 @@ Default 390 x 760 until the host reports.
 Every node gets `"frame": [left, top, width, height]` in points, relative to
 its parent's top-left (scroll offset not applied). Scroll containers add
 `"content": [w, h]` and keep native scrolling; the host reports scroll offsets
-back with `idorid_vm_scroll(vm, id, x, y)` (optional, for `getScrollY()`).
+back with `indroid_vm_scroll(vm, id, x, y)` (optional, for `getScrollY()`).
 
 The existing per-type properties (`text`, `textSize`, `color`, `bg`, `draw`,
 ...) stay. Layout-only properties (`width`, `height`, `weight`, `margin`,

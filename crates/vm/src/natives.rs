@@ -490,7 +490,7 @@ fn replace_regex(vm: &mut Vm, a: &[u32], all: bool) -> JResult<u64> {
 }
 
 pub fn new_instance(vm: &mut Vm, c: ClassId) -> JResult<Ref> {
-    use idorid_dex::access;
+    use indroid_dex::access;
     if vm.class(c).flags & (access::ABSTRACT | access::INTERFACE) != 0 {
         let n = vm.class(c).java_name();
         return vm.throw_new("Ljava/lang/InstantiationException;", &n);

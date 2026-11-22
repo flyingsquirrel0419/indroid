@@ -1,0 +1,3 @@
+# indroid neo fstab (selected with androidboot.fstab_suffix=indroid): the ROM
+# partitions are a directory tree; /data is a host directory.
+/dev/block/vdc   /data     ext4      noatime,nosuid,nodev   wait,latemount

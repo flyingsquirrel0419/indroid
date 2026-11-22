@@ -1,5 +1,5 @@
 mod support;
-use idorid_a64::{Access, AddressSpace, Cpu, Exit};
+use indroid_a64::{Access, AddressSpace, Cpu, Exit};
 use std::cell::UnsafeCell;
 
 struct Memory(UnsafeCell<[u8; 4096]>);

@@ -1,7 +1,7 @@
 package android.content.res;
 
 /**
- * idorid: decoding of the VM's encoded resource values.
+ * indroid: decoding of the VM's encoded resource values.
  * Prefixes: s: string, i: int, c: color, d: dimension ("16dp"), f: float,
  * b: boolean, r: reference (resource id), a: theme attribute (?attr),
  * p: file path inside the APK (drawables, color state lists, xml).
@@ -36,7 +36,7 @@ public final class VMValue {
             }
         } catch (RuntimeException e) { return def; }
     }
-    /** Dimension in idorid pixels (1px == 1dp == 1sp). */
+    /** Dimension in indroid pixels (1px == 1dp == 1sp). */
     public static float dimension(String v, float def) {
         if (v == null) return def;
         String b = body(v);

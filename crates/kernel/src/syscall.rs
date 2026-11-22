@@ -5,7 +5,7 @@ use crate::fd::*;
 use crate::mm::*;
 use crate::task::*;
 use crate::vfs::*;
-use idorid_a64::Cpu;
+use indroid_a64::Cpu;
 use parking_lot::Mutex;
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
@@ -25,12 +25,12 @@ const AT_SYMLINK_NOFOLLOW: u32 = 0x100;
 const AT_REMOVEDIR: u32 = 0x200;
 const AT_EMPTY_PATH: u32 = 0x1000;
 
-/// `IDORID_STRACE=1` traces everything; any other value traces only
-/// processes whose comm contains it (e.g. `IDORID_STRACE=systemui`).
+/// `INDROID_STRACE=1` traces everything; any other value traces only
+/// processes whose comm contains it (e.g. `INDROID_STRACE=systemui`).
 pub(crate) fn strace_match(ctx: &Ctx) -> bool {
     static FILTER: std::sync::OnceLock<Option<String>> = std::sync::OnceLock::new();
     match FILTER.get_or_init(|| {
-        std::env::var("IDORID_STRACE")
+        std::env::var("INDROID_STRACE")
             .ok()
             .filter(|v| !v.is_empty() && v != "1")
     }) {
@@ -1727,7 +1727,7 @@ fn syscall(ctx: &Ctx, cpu: &mut Cpu, nr: u64, a: [u64; 6]) -> i64 {
             for (i, s) in [
                 "Linux",
                 host.as_str(),
-                "5.15.110-idorid",
+                "5.15.110-indroid",
                 "#1 SMP PREEMPT",
                 "aarch64",
                 "localdomain",

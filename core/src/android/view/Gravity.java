@@ -43,7 +43,7 @@ public class Gravity {
     public static void applyDisplay(int gravity, Rect display, Rect inoutObj) {}
     public static String toString(int g) { String d = describe(g); return d == null ? "NO GRAVITY" : d.toUpperCase(); }
 
-    /** idorid: compact host description such as "center" or "left|top". */
+    /** indroid: compact host description such as "center" or "left|top". */
     public static String describe(int g) {
         if (g == 0 || g == -1) return null;
         g = getAbsoluteGravity(g, 0);

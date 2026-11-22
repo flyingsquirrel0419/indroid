@@ -21,7 +21,7 @@ public class Color {
         if (n.equals("yellow")) return YELLOW; if (n.equals("cyan")) return CYAN; if (n.equals("magenta")) return MAGENTA;
         throw new IllegalArgumentException("Unknown color");
     }
-    /** idorid: "#AARRGGBB" for the host. */
+    /** indroid: "#AARRGGBB" for the host. */
     public static String toHex(int c) {
         String h = Integer.toHexString(c);
         while (h.length() < 8) h = "0" + h;

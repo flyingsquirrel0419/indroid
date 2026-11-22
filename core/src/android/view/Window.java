@@ -59,7 +59,7 @@ public class Window {
     private CharSequence title;
 
     public Window(Context context) { this.context = context; }
-    /** idorid: legacy no-arg constructor. */
+    /** indroid: legacy no-arg constructor. */
     public Window() { this(null); }
     public final Context getContext() { return context; }
 
@@ -81,8 +81,8 @@ public class Window {
     }
     public View getDecorView() { installDecor(); return decor; }
     public final View peekDecorView() { return decor; }
-    /** idorid: the view group holding the activity content (id android.R.id.content at first). */
-    public ViewGroup idoridContentParent() { installDecor(); return contentParent; }
+    /** indroid: the view group holding the activity content (id android.R.id.content at first). */
+    public ViewGroup indroidContentParent() { installDecor(); return contentParent; }
     @SuppressWarnings("unchecked")
     public <T extends View> T findViewById(int id) { return (T) getDecorView().findViewById(id); }
     public final <T extends View> T requireViewById(int id) {
@@ -130,7 +130,7 @@ public class Window {
         public int getSystemBarsBehavior() { return behavior; }
     };
     public WindowInsetsController getInsetsController() { return insetsController; }
-    public boolean idoridDecorFitsSystemWindows() { return decorFitsSystemWindows; }
+    public boolean indroidDecorFitsSystemWindows() { return decorFitsSystemWindows; }
     public void setSoftInputMode(int m) { attrs.softInputMode = m; }
     public void setBackgroundDrawable(Drawable d) { installDecor(); decor.setBackground(d); }
     public void setBackgroundDrawableResource(int r) { if (context != null) setBackgroundDrawable(context.getDrawable(r)); }

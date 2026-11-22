@@ -18,16 +18,16 @@ public class AlertDialog extends Dialog {
     public android.widget.Button getButton(int which) { return null; }
     public void setView(View v) { content = v; }
 
-    void idoridButton(int which) {
+    void indroidButton(int which) {
         if (which >= 0) { if (itemsListener != null) itemsListener.onClick(this, which); dismiss(); return; }
         DialogInterface.OnClickListener l = buttonListener[-which - 1];
         if (l != null) l.onClick(this, which);
         dismiss();
     }
-    void idoridJson(StringBuilder sb) {
+    void indroidJson(StringBuilder sb) {
         sb.append("{\"title\":"); Json.str(sb, title);
         sb.append(",\"message\":"); Json.str(sb, message);
-        if (content != null) { sb.append(",\"content\":"); content.idoridJson(sb); }
+        if (content != null) { sb.append(",\"content\":"); content.indroidJson(sb); }
         sb.append(",\"buttons\":[");
         boolean first = true;
         for (int i = 0; i < 3; i++) {

@@ -310,7 +310,7 @@ impl Binder {
             };
             if let Some(work) = work {
                 let out = self.receive(ctx, work)?;
-                if std::env::var_os("IDORID_BINDER_TRACE").is_some() {
+                if std::env::var_os("INDROID_BINDER_TRACE").is_some() {
                     eprintln!(
                         "binder pid={} tid={} read {:#x}",
                         ctx.process.pid,
@@ -384,7 +384,7 @@ impl Binder {
             let prepared = match prepare_objects(ctx, &data, &offsets, sg_size) {
                 Ok(prepared) => prepared,
                 Err(error) => {
-                    if std::env::var_os("IDORID_BINDER_TRACE").is_some() {
+                    if std::env::var_os("INDROID_BINDER_TRACE").is_some() {
                         eprintln!("binder pid={} invalid objects: {}", ctx.process.pid, error);
                     }
                     let mut s = self.context.state.lock();
@@ -394,7 +394,7 @@ impl Binder {
                     return Ok(());
                 }
             };
-            if std::env::var_os("IDORID_BINDER_TRACE").is_some() {
+            if std::env::var_os("INDROID_BINDER_TRACE").is_some() {
                 eprintln!(
                     "binder pid={} tid={} {} handle={} code={} flags={:#x} data={} offsets={} sg={}",
                     ctx.process.pid,
@@ -414,7 +414,7 @@ impl Binder {
             put32(&mut header, 24, ctx.process.pid as u32);
             put32(&mut header, 28, ctx.process.uid.load(Ordering::Relaxed));
             let mut s = self.context.state.lock();
-            if std::env::var_os("IDORID_BINDER_TRACE").is_some() {
+            if std::env::var_os("INDROID_BINDER_TRACE").is_some() {
                 eprintln!("binder pid={} acquired context", ctx.process.pid);
             }
             let target = if reply {
@@ -453,7 +453,7 @@ impl Binder {
             let target_node = target_node_id
                 .and_then(|id| s.nodes.get(&id))
                 .map(|n| (n.ptr, n.cookie, n.flags));
-            if std::env::var_os("IDORID_BINDER_TRACE").is_some() {
+            if std::env::var_os("INDROID_BINDER_TRACE").is_some() {
                 eprintln!("binder pid={} route {:?}", ctx.process.pid, target);
             }
             if let Some((to, mut target_tid, allow_fds)) =
@@ -492,7 +492,7 @@ impl Binder {
                     for (handle, weak) in refs {
                         let _ = change_ref(&mut s, to, handle, bc(if weak { 7 } else { 6 }, 4));
                     }
-                    if std::env::var_os("IDORID_BINDER_TRACE").is_some() {
+                    if std::env::var_os("INDROID_BINDER_TRACE").is_some() {
                         eprintln!(
                             "binder pid={} object translation failed: {}",
                             ctx.process.pid, error
@@ -603,7 +603,7 @@ impl Binder {
                     .todo
                     .push_back(Work::Command(COMPLETE));
             } else {
-                if std::env::var_os("IDORID_BINDER_TRACE").is_some() {
+                if std::env::var_os("INDROID_BINDER_TRACE").is_some() {
                     eprintln!(
                         "binder pid={} dead target handle={}",
                         ctx.process.pid,
@@ -1234,7 +1234,7 @@ impl Node for Binder {
             WRITE_READ => {
                 let r = self.write_read(ctx, arg);
                 if let Err(e) = r {
-                    if std::env::var_os("IDORID_BINDER_TRACE").is_some() || e == ENOTTY {
+                    if std::env::var_os("INDROID_BINDER_TRACE").is_some() || e == ENOTTY {
                         eprintln!(
                             "binder pid={} tid={} write_read error {e}",
                             ctx.process.pid, ctx.thread.tid

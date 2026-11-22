@@ -9,7 +9,7 @@ import android.graphics.drawable.RippleDrawable;
 import android.graphics.drawable.StateListDrawable;
 import java.util.ArrayList;
 
-/** idorid: inflates drawable XML (shape, selector, layer-list, inset, ripple, color, bitmap, vector). */
+/** indroid: inflates drawable XML (shape, selector, layer-list, inset, ripple, color, bitmap, vector). */
 final class VMDrawables {
     private VMDrawables() {}
     static final int ATTR_DRAWABLE = 0x01010199, ATTR_COLOR = 0x010101a5, ATTR_SHAPE = 0x010101b5, ATTR_RADIUS = 0x010101a8,
@@ -19,7 +19,7 @@ final class VMDrawables {
         ATTR_RIGHT = 0x010101af, ATTR_BOTTOM = 0x010101b0, ATTR_SRC = 0x01010119, ATTR_TINT = 0x01010121;
 
     static Drawable inflate(Resources res, String path, Resources.Theme theme) {
-        VMXml root = VMXml.parse(res.idoridXml(path));
+        VMXml root = VMXml.parse(res.indroidXml(path));
         return root == null ? null : inflate(res, root, theme);
     }
 
@@ -31,7 +31,7 @@ final class VMDrawables {
     }
     private static String prim(Resources res, String v, Resources.Theme theme) {
         for (int g = 0; g < 8 && v != null && VMValue.kind(v) == 'r'; g++) {
-            String r = res.idoridValue(VMValue.intOf(v, 0));
+            String r = res.indroidValue(VMValue.intOf(v, 0));
             if (r != null && VMValue.kind(r) == 'a' && theme != null) r = theme.resolveRef(r);
             if (r == null) break;
             v = r;
@@ -41,7 +41,7 @@ final class VMDrawables {
     private static int color(Resources res, String v, Resources.Theme theme, int def) {
         v = prim(res, v, theme);
         if (v == null) return def;
-        if (VMValue.kind(v) == 'p') { ColorStateList c = ColorStateList.idoridInflate(res, VMValue.body(v), theme); return c == null ? def : c.getDefaultColor(); }
+        if (VMValue.kind(v) == 'p') { ColorStateList c = ColorStateList.indroidInflate(res, VMValue.body(v), theme); return c == null ? def : c.getDefaultColor(); }
         return VMValue.intOf(v, def);
     }
     private static float dim(Resources res, String v, Resources.Theme theme, float def) { v = prim(res, v, theme); return v == null ? def : VMValue.dimension(v, def); }
@@ -142,7 +142,7 @@ final class VMDrawables {
             if (src != null && VMValue.kind(src) == 'r') return Drawable.fromResource(VMValue.intOf(src, 0));
             return null;
         }
-        if (tag.equals("vector")) return android.graphics.drawable.VectorDrawable.idoridInflate(n, res, theme);
+        if (tag.equals("vector")) return android.graphics.drawable.VectorDrawable.indroidInflate(n, res, theme);
         if (tag.equals("animated-vector")) {
             android.graphics.drawable.AnimatedVectorDrawable v = new android.graphics.drawable.AnimatedVectorDrawable();
             String ref = attr(n, ATTR_DRAWABLE, "drawable", theme);

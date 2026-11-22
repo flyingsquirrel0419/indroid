@@ -1,6 +1,6 @@
 //! End-to-end: real APKs built with the stock Android SDK, driven headless.
 
-use idorid_ffi::App;
+use indroid_ffi::App;
 
 fn load(path: &str) -> App {
     let p = format!("{}/../../{path}", env!("CARGO_MANIFEST_DIR"));
@@ -45,7 +45,7 @@ fn id(v: &serde_json::Value) -> i32 {
 #[test]
 fn sample_app_counts_taps() {
     let mut app = load("tests/fixtures/sample.apk");
-    assert_eq!(app.label, "Idorid Sample");
+    assert_eq!(app.label, "Indroid Sample");
     let v = ui(&app.launch());
     by_text(&v, "Hello from Android");
     let field = id(by_type(&v, "EditText"));
@@ -83,7 +83,7 @@ fn todo_app_full_flow() {
     // second activity with extras
     let v = ui(&app.click(id(by_text(&v, "ABOUT"))));
     assert_eq!(v["title"], "About");
-    by_text(&v, "Open tasks: 2\nAndroid API 30 on idorid");
+    by_text(&v, "Open tasks: 2\nAndroid API 30 on indroid");
     let logo = by_type(&v, "ImageView");
     let png = app
         .resource_bytes(logo["src"].as_u64().unwrap() as u32)

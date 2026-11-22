@@ -31,8 +31,8 @@ public class ProgressBar extends View {
         setMeasuredDimension(resolveSize(Math.max(dw + getPaddingLeft() + getPaddingRight(), getSuggestedMinimumWidth()), ws),
                              resolveSize(Math.max(dh + getPaddingTop() + getPaddingBottom(), getSuggestedMinimumHeight()), hs));
     }
-    protected String idoridType() { return "ProgressBar"; }
-    protected void idoridProps(StringBuilder sb) {
+    protected String indroidType() { return "ProgressBar"; }
+    protected void indroidProps(StringBuilder sb) {
         Json.key(sb, "progress"); sb.append(progress);
         Json.key(sb, "max"); sb.append(max);
         Json.key(sb, "indeterminate"); sb.append(indeterminate);

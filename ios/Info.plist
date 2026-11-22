@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0"><dict>
-<key>CFBundleExecutable</key><string>idorid</string>
-<key>CFBundleIdentifier</key><string>dev.idorid.app</string>
-<key>CFBundleName</key><string>idorid</string>
-<key>CFBundleDisplayName</key><string>idorid</string>
+<key>CFBundleExecutable</key><string>indroid</string>
+<key>CFBundleIdentifier</key><string>dev.indroid.app</string>
+<key>CFBundleName</key><string>indroid</string>
+<key>CFBundleDisplayName</key><string>indroid</string>
 <key>CFBundleShortVersionString</key><string>1.0.0</string>
 <key>CFBundleVersion</key><string>1</string>
 <key>CFBundlePackageType</key><string>APPL</string>
@@ -13,8 +13,4 @@
 <key>UIRequiredDeviceCapabilities</key><array><string>arm64</string></array>
 <key>UILaunchScreen</key><dict/>
 <key>UISupportedInterfaceOrientations</key><array><string>UIInterfaceOrientationPortrait</string><string>UIInterfaceOrientationLandscapeLeft</string><string>UIInterfaceOrientationLandscapeRight</string></array>
-<key>CFBundleDocumentTypes</key><array><dict><key>CFBundleTypeName</key><string>Android package</string><key>LSItemContentTypes</key><array><string>com.android.package-archive</string></array><key>CFBundleTypeRole</key><string>Viewer</string></dict></array>
-<key>UTImportedTypeDeclarations</key><array><dict><key>UTTypeIdentifier</key><string>com.android.package-archive</string><key>UTTypeDescription</key><string>Android package</string><key>UTTypeConformsTo</key><array><string>public.data</string></array><key>UTTypeTagSpecification</key><dict><key>public.filename-extension</key><array><string>apk</string></array><key>public.mime-type</key><string>application/vnd.android.package-archive</string></dict></dict></array>
-<key>LSSupportsOpeningDocumentsInPlace</key><false/>
-<key>UIFileSharingEnabled</key><true/>
 </dict></plist>

@@ -1,3 +1,3 @@
 #!/system/bin/sh
-# idorid neo: no 32-bit ARM support; the 64-bit self test covers BoringSSL.
+# indroid neo: no 32-bit ARM support; the 64-bit self test covers BoringSSL.
 exit 0

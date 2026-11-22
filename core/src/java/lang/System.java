@@ -14,10 +14,10 @@ public final class System {
     public static String getProperty(String k) { return getProperty(k, null); }
     public static String getProperty(String k, String def) {
         if ("line.separator".equals(k)) return "\n";
-        if ("java.vm.name".equals(k)) return "idorid";
+        if ("java.vm.name".equals(k)) return "indroid";
         if ("os.name".equals(k)) return "Linux";
         if ("file.separator".equals(k)) return "/";
-        if ("http.agent".equals(k)) return "idorid";
+        if ("http.agent".equals(k)) return "indroid";
         return def;
     }
     public static String getenv(String k) { return null; }
@@ -25,6 +25,6 @@ public final class System {
     public static native void exit(int code);
     public static void gc() {}
     public static void runFinalization() {}
-    public static void loadLibrary(String lib) { throw new UnsatisfiedLinkError("native libraries are not supported on idorid: " + lib); }
+    public static void loadLibrary(String lib) { throw new UnsatisfiedLinkError("native libraries are not supported on indroid: " + lib); }
     public static void load(String lib) { loadLibrary(lib); }
 }

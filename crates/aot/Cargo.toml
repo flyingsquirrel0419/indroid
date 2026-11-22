@@ -1,5 +1,5 @@
 [package]
-name = "idorid-aot"
+name = "indroid-aot"
 description = "Build-time AArch64 ROM page translation"
 version.workspace = true
 edition.workspace = true
@@ -8,4 +8,4 @@ repository.workspace = true
 build = "build.rs"
 
 [dependencies]
-idorid-a64 = { path = "../a64" }
+indroid-a64 = { path = "../a64" }

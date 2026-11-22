@@ -1,15 +1,15 @@
-//! `idorid` command-line runner (headless; used for tests and development).
+//! `indroid` command-line runner (headless; used for tests and development).
 
 use std::process::ExitCode;
 use std::rc::Rc;
 
-use idorid_vm::Vm;
+use indroid_vm::Vm;
 
 fn usage() -> ExitCode {
     eprintln!(
-        "usage:\n  idorid main <file.dex|file.apk>... <MainClass>   run static main(String[])\n  idorid run <app.apk> [script...]                 launch an app headless; commands from args or stdin:
+        "usage:\n  indroid main <file.dex|file.apk>... <MainClass>   run static main(String[])\n  indroid run <app.apk> [script...]                 launch an app headless; commands from args or stdin:
                                                    window <w> <h> | size <id> <w> <h> | touch <id> <action> <x> <y> | click <id> | type <id> <text> | back | tick | json | log | quit
-  idorid dump <file.dex>                           list classes and methods\n  idorid missing <app.apk|dex>...                  framework classes/methods/fields the app needs but core lacks\n\nflags: --stats  print instruction count, GC and timing"
+  indroid dump <file.dex>                           list classes and methods\n  indroid missing <app.apk|dex>...                  framework classes/methods/fields the app needs but core lacks\n\nflags: --stats  print instruction count, GC and timing"
     );
     ExitCode::from(2)
 }
@@ -17,7 +17,7 @@ fn usage() -> ExitCode {
 fn load(vm: &mut Vm, path: &str) -> Result<(), String> {
     let bytes = std::fs::read(path).map_err(|e| format!("{path}: {e}"))?;
     if bytes.starts_with(b"PK") {
-        let apk = idorid_apk::Apk::open(bytes).map_err(|e| format!("{path}: {e:?}"))?;
+        let apk = indroid_apk::Apk::open(bytes).map_err(|e| format!("{path}: {e:?}"))?;
         for d in apk.dex_files() {
             vm.add_dex(Rc::from(d))?;
         }
@@ -37,11 +37,11 @@ fn main() -> ExitCode {
     match cmd.as_str() {
         "neo" => neo(&args[1..]),
         "neo-install" if args.len() >= 3 => {
-            // idorid neo-install <system-image.zip> <out-dir>
+            // indroid neo-install <system-image.zip> <out-dir>
             let out = std::path::PathBuf::from(&args[2]);
             let work = out.with_extension("work");
             let t0 = std::time::Instant::now();
-            match idorid_rom::install(std::path::Path::new(&args[1]), &out, &work, &mut |m| {
+            match indroid_rom::install(std::path::Path::new(&args[1]), &out, &work, &mut |m| {
                 eprintln!("[install] {m}")
             }) {
                 Ok(()) => {
@@ -90,7 +90,7 @@ fn main() -> ExitCode {
             let r = vm.run_main(&args[args.len() - 1]);
             if stats {
                 eprintln!(
-                    "[idorid] load {:?}, total {:?}, {} instructions, {} classes, {} objects live, {} GCs, heap {} KB",
+                    "[indroid] load {:?}, total {:?}, {} instructions, {} classes, {} objects live, {} GCs, heap {} KB",
                     t_load,
                     t0.elapsed(),
                     vm.instructions,
@@ -117,7 +117,7 @@ fn main() -> ExitCode {
                     return ExitCode::from(1);
                 }
             };
-            let dex = match idorid_dex::Dex::parse(&bytes) {
+            let dex = match indroid_dex::Dex::parse(&bytes) {
                 Ok(d) => d,
                 Err(e) => {
                     eprintln!("{e}");
@@ -235,15 +235,15 @@ fn run_app(path: &str, script: &[String], stats: bool) -> ExitCode {
         }
     };
     let t0 = std::time::Instant::now();
-    let mut app = match idorid_ffi::App::load(bytes, true) {
+    let mut app = match indroid_ffi::App::load(bytes, true) {
         Ok(a) => a,
         Err(e) => {
             eprintln!("error: {e}");
             return ExitCode::from(1);
         }
     };
-    let raw = std::env::var("IDORID_JSON").is_ok();
-    if let Ok(dir) = std::env::var("IDORID_DATA") {
+    let raw = std::env::var("INDROID_JSON").is_ok();
+    if let Ok(dir) = std::env::var("INDROID_DATA") {
         app.set_data_dir(&dir);
     }
     let ui = app.launch();
@@ -251,7 +251,7 @@ fn run_app(path: &str, script: &[String], stats: bool) -> ExitCode {
     show(&ui, raw);
     if stats {
         eprintln!(
-            "[idorid] launch {:?}, {} instructions, {} classes, {} objects, heap {} KB",
+            "[indroid] launch {:?}, {} instructions, {} classes, {} objects, heap {} KB",
             launch_time,
             app.vm.instructions,
             app.vm.classes.len(),
@@ -344,7 +344,7 @@ fn run_app(path: &str, script: &[String], stats: bool) -> ExitCode {
     }
     if stats {
         eprintln!(
-            "[idorid] total {:?}, {} instructions, {} GCs",
+            "[indroid] total {:?}, {} instructions, {} GCs",
             t0.elapsed(),
             app.vm.instructions,
             app.vm.heap.collections
@@ -353,7 +353,7 @@ fn run_app(path: &str, script: &[String], stats: bool) -> ExitCode {
     ExitCode::SUCCESS
 }
 
-/// `idorid neo [--rom DIR] [--state DIR] [--env K=V]... -- PATH [ARGS...]`:
+/// `indroid neo [--rom DIR] [--state DIR] [--env K=V]... -- PATH [ARGS...]`:
 /// runs a guest aarch64 Linux program from the ROM on the neo kernel.
 fn neo(args: &[String]) -> ExitCode {
     use std::sync::Arc;
@@ -394,7 +394,7 @@ fn neo(args: &[String]) -> ExitCode {
     }
     let prog = &args[i..];
     if prog.is_empty() {
-        eprintln!("usage: idorid neo [--rom DIR] [--state DIR] [--env K=V] -- /system/bin/sh -c 'echo hi'");
+        eprintln!("usage: indroid neo [--rom DIR] [--state DIR] [--env K=V] -- /system/bin/sh -c 'echo hi'");
         return ExitCode::from(2);
     }
     // rom-overlay/<variant> (ROM-specific patches) over rom-overlay/common.
@@ -405,22 +405,22 @@ fn neo(args: &[String]) -> ExitCode {
         } else {
             "emu13"
         };
-        if variant == "cf13" && std::env::var_os("IDORID_CMDLINE").is_none() {
+        if variant == "cf13" && std::env::var_os("INDROID_CMDLINE").is_none() {
             // Cuttlefish "guest_swiftshader" configuration: SwiftShader Vulkan
             // + ANGLE in the guest, minigbm gralloc, DRM/KMS client composition.
             std::env::set_var(
-                "IDORID_CMDLINE",
-                "androidboot.hardware=cutf_cvm androidboot.selinux=permissive androidboot.fstab_suffix=idorid \
+                "INDROID_CMDLINE",
+                "androidboot.hardware=cutf_cvm androidboot.selinux=permissive androidboot.fstab_suffix=indroid \
                  androidboot.hardware.gralloc=minigbm androidboot.hardware.hwcomposer=ranchu \
                  androidboot.hardware.hwcomposer.mode=client androidboot.hardware.hwcomposer.display_finder_mode=drm \
                  androidboot.hardware.egl=angle androidboot.hardware.vulkan=pastel androidboot.cpuvulkan.version=4202496 \
-                 androidboot.opengles.version=196609 androidboot.lcd_density=320 androidboot.serialno=IDORID0001 \
+                 androidboot.opengles.version=196609 androidboot.lcd_density=320 androidboot.serialno=INDROID0001 \
                  androidboot.hw_timeout_multiplier=20 androidboot.slot_suffix=_a androidboot.force_normal_boot=1",
             );
         }
         vec![base.join(variant), base.join("common")]
     };
-    let k = idorid_kernel::Kernel::new(idorid_kernel::Config {
+    let k = indroid_kernel::Kernel::new(indroid_kernel::Config {
         rom,
         state,
         overlays,
@@ -431,8 +431,8 @@ fn neo(args: &[String]) -> ExitCode {
             let _ = o.flush();
         }),
     });
-    if let Some(path) = std::env::var_os("IDORID_GFXSTREAM") {
-        match idorid_gpu::KernelBackend::load(std::path::Path::new(&path)) {
+    if let Some(path) = std::env::var_os("INDROID_GFXSTREAM") {
+        match indroid_gpu::KernelBackend::load(std::path::Path::new(&path)) {
             Ok(backend) => k.set_gpu_backend(Some(backend)),
             Err(err) => {
                 eprintln!("gfxstream initialization failed: {err}");
@@ -455,7 +455,7 @@ fn neo(args: &[String]) -> ExitCode {
             }
         });
     }
-    // `kill -USR1 <idorid>` dumps every guest thread's syscall and backtrace.
+    // `kill -USR1 <indroid>` dumps every guest thread's syscall and backtrace.
     {
         static DUMP: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
         extern "C" fn on_usr1(_: libc::c_int) {
@@ -466,8 +466,8 @@ fn neo(args: &[String]) -> ExitCode {
         std::thread::spawn(move || loop {
             std::thread::sleep(std::time::Duration::from_millis(300));
             if DUMP.swap(false, std::sync::atomic::Ordering::Relaxed) {
-                eprintln!("[neo] binder:\n{}", idorid_kernel::binder::dump());
-                eprintln!("[neo] threads:\n{}", idorid_kernel::task::dump_threads(&k));
+                eprintln!("[neo] binder:\n{}", indroid_kernel::binder::dump());
+                eprintln!("[neo] threads:\n{}", indroid_kernel::task::dump_threads(&k));
             }
         });
     }
@@ -495,8 +495,8 @@ fn neo(args: &[String]) -> ExitCode {
         insns as f64 / secs / 1e6
     );
     match k.exit_status(pid) {
-        Some(idorid_kernel::task::ExitStatus::Exited(c)) => ExitCode::from(c as u8),
-        Some(idorid_kernel::task::ExitStatus::Signaled(s, _)) => ExitCode::from(128 + s as u8),
+        Some(indroid_kernel::task::ExitStatus::Exited(c)) => ExitCode::from(c as u8),
+        Some(indroid_kernel::task::ExitStatus::Signaled(s, _)) => ExitCode::from(128 + s as u8),
         None => ExitCode::SUCCESS,
     }
 }

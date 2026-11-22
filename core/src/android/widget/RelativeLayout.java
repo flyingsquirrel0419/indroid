@@ -328,5 +328,5 @@ public class RelativeLayout extends ViewGroup {
             child.layout(lp.mLeft, lp.mTop, lp.mRight, lp.mBottom);
         }
     }
-    protected String idoridType() { return "RelativeLayout"; }
+    protected String indroidType() { return "RelativeLayout"; }
 }

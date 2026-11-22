@@ -1,5 +1,5 @@
 //! Exercise renderer color-buffer upload and the optional frame capture hook.
-use idorid_gpu::{Box3d, Renderer, ResourceCreate};
+use indroid_gpu::{Box3d, Renderer, ResourceCreate};
 fn main() -> Result<(), String> {
     let path = std::env::args_os()
         .nth(1)

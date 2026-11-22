@@ -1,14 +1,14 @@
 package android.os;
 public class Build {
-    public static final String MANUFACTURER = "Apple", BRAND = "idorid", MODEL = "iPhone", DEVICE = "idorid", PRODUCT = "idorid",
-        BOARD = "idorid", HARDWARE = "idorid", FINGERPRINT = "idorid/idorid:14/idorid", ID = "IDORID", TYPE = "user", TAGS = "release",
-        DISPLAY = "idorid", HOST = "idorid", USER = "idorid", SERIAL = "unknown", BOOTLOADER = "unknown", RADIO = "unknown";
+    public static final String MANUFACTURER = "Apple", BRAND = "indroid", MODEL = "iPhone", DEVICE = "indroid", PRODUCT = "indroid",
+        BOARD = "indroid", HARDWARE = "indroid", FINGERPRINT = "indroid/indroid:14/indroid", ID = "INDROID", TYPE = "user", TAGS = "release",
+        DISPLAY = "indroid", HOST = "indroid", USER = "indroid", SERIAL = "unknown", BOOTLOADER = "unknown", RADIO = "unknown";
     public static final String[] SUPPORTED_ABIS = { "arm64-v8a" };
     public static final String CPU_ABI = "arm64-v8a";
     public static final long TIME = 0;
     public static class VERSION {
         public static final int SDK_INT = 30;
-        public static final String RELEASE = "11", CODENAME = "REL", INCREMENTAL = "idorid";
+        public static final String RELEASE = "11", CODENAME = "REL", INCREMENTAL = "indroid";
         public static final int PREVIEW_SDK_INT = 0;
     }
     public static class VERSION_CODES {

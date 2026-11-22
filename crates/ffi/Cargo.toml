@@ -1,5 +1,5 @@
 [package]
-name = "idorid-ffi"
+name = "indroid-ffi"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
@@ -9,10 +9,10 @@ repository.workspace = true
 crate-type = ["staticlib", "rlib"]
 
 [dependencies]
-idorid-vm = { path = "../vm" }
-idorid-apk = { path = "../apk" }
-idorid-kernel = { path = "../kernel" }
-idorid-rom = { path = "../rom" }
+indroid-vm = { path = "../vm" }
+indroid-apk = { path = "../apk" }
+indroid-kernel = { path = "../kernel" }
+indroid-rom = { path = "../rom" }
 
 [dev-dependencies]
 serde_json = "1"

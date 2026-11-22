@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Downloads the AOSP arm64 emulator system image (Android 13, API 33) and
-# unpacks it into a plain directory tree usable as idorid neo's guest rootfs:
+# unpacks it into a plain directory tree usable as indroid neo's guest rootfs:
 #   <out>/            system partition (system-as-root: /system, /bin -> ...)
 #   <out>/system_ext, <out>/product, <out>/vendor
 #   <out>/apex/<name> activated APEX payloads (what apexd would mount)

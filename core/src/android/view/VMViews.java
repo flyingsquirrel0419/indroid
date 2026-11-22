@@ -1,5 +1,5 @@
 package android.view;
-/** idorid: package-private view lookups for the host bridge. */
+/** indroid: package-private view lookups for the host bridge. */
 public final class VMViews {
     private VMViews() {}
     public static native boolean overridesOnDraw(View view);

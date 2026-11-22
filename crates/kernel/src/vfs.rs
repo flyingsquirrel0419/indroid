@@ -265,7 +265,7 @@ impl Node for HostDir {
             let Ok(ft) = e.file_type() else { continue };
             use std::os::unix::ffi::OsStrExt;
             let name = e.file_name().as_bytes().to_vec();
-            if name.starts_with(b".idorid") {
+            if name.starts_with(b".indroid") {
                 continue;
             }
             let kind = if ft.is_dir() {

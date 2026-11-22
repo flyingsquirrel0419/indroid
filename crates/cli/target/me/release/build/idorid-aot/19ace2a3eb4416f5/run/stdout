@@ -1,3 +1,0 @@
-cargo:rerun-if-env-changed=IDORID_AOT_PROFILE
-cargo:rerun-if-env-changed=IDORID_AOT_ROM
-cargo:rerun-if-env-changed=IDORID_AOT_LIMIT

@@ -40,7 +40,7 @@ public class ImageView extends View {
     }
     /** Non-bitmap drawables (vectors, shapes) are painted as canvas ops; bitmaps go to the host by resource id. */
     private boolean imageIsBitmap() { return image == null || (src != 0 && (image instanceof android.graphics.drawable.BitmapDrawable || image.getClass().getName().startsWith("android.graphics.drawable.Drawable$"))); }
-    protected boolean idoridNeedsCanvas() { return super.idoridNeedsCanvas() || !imageIsBitmap(); }
+    protected boolean indroidNeedsCanvas() { return super.indroidNeedsCanvas() || !imageIsBitmap(); }
     protected void onDraw(android.graphics.Canvas c) {
         super.onDraw(c);
         if (image == null || imageIsBitmap()) return;
@@ -57,7 +57,7 @@ public class ImageView extends View {
         image.setBounds(l, t, l + iw, t + ih);
         image.draw(c);
     }
-    public void setImageDrawable(android.graphics.drawable.Drawable d) { if (d == image) return; src = d == null ? 0 : d.idoridResource(); installImage(d); requestLayout(); }
+    public void setImageDrawable(android.graphics.drawable.Drawable d) { if (d == image) return; src = d == null ? 0 : d.indroidResource(); installImage(d); requestLayout(); }
     public void setMaxWidth(int w) { maxW = w; requestLayout(); }
     public void setMaxHeight(int h) { maxH = h; requestLayout(); }
     public int getMaxWidth() { return maxW; }
@@ -85,8 +85,8 @@ public class ImageView extends View {
     public void setColorFilter(int c) { tint = c; }
     public void setImageTintList(android.content.res.ColorStateList c) { imageTint=c; tint = c == null ? 0 : c.getDefaultColor(); }
     public void setAdjustViewBounds(boolean b) { adjustViewBounds = b; requestLayout(); }
-    protected String idoridType() { return "ImageView"; }
-    protected void idoridProps(StringBuilder sb) {
+    protected String indroidType() { return "ImageView"; }
+    protected void indroidProps(StringBuilder sb) {
         if (src != 0) {
             Json.key(sb, "src"); sb.append(src);
             String n = null;

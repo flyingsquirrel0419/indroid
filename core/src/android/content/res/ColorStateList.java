@@ -43,10 +43,10 @@ public class ColorStateList implements Parcelable {
     };
 
     static final int ATTR_COLOR = 0x010101a5, ATTR_ALPHA = 0x0101031f, ATTR_LSTAR = 0x01010647;
-    /** idorid: inflates res/color/*.xml (a <selector> of <item android:color android:state_*>). */
-    public static ColorStateList idoridInflate(Resources res, String path, Resources.Theme theme) {
+    /** indroid: inflates res/color/*.xml (a <selector> of <item android:color android:state_*>). */
+    public static ColorStateList indroidInflate(Resources res, String path, Resources.Theme theme) {
         if (path.startsWith("res/framework/")) return null;
-        VMXml root = VMXml.parse(res.idoridXml(path));
+        VMXml root = VMXml.parse(res.indroidXml(path));
         if (root == null) return null;
         int n = root.children.size();
         int[][] states = new int[n][];
@@ -59,8 +59,8 @@ public class ColorStateList implements Parcelable {
             int color = 0;
             if (c != null) {
                 if (VMValue.kind(c) == 'r') {
-                    String r = res.idoridValue(VMValue.intOf(c, 0));
-                    if (r != null && VMValue.kind(r) == 'p') { ColorStateList nested = idoridInflate(res, VMValue.body(r), theme); color = nested == null ? 0 : nested.getDefaultColor(); }
+                    String r = res.indroidValue(VMValue.intOf(c, 0));
+                    if (r != null && VMValue.kind(r) == 'p') { ColorStateList nested = indroidInflate(res, VMValue.body(r), theme); color = nested == null ? 0 : nested.getDefaultColor(); }
                     else color = VMValue.intOf(r, 0);
                 } else color = VMValue.intOf(c, 0);
             }
@@ -68,7 +68,7 @@ public class ColorStateList implements Parcelable {
             if (a == null) a = item.get("alpha");
             if (a != null) {
                 if (VMValue.kind(a) == 'a' && theme != null) a = theme.resolveRef(a);
-                if (a != null && VMValue.kind(a) == 'r') a = res.idoridValue(VMValue.intOf(a, 0));
+                if (a != null && VMValue.kind(a) == 'r') a = res.indroidValue(VMValue.intOf(a, 0));
                 float f = VMValue.floatOf(a, 1f);
                 int alpha = Math.round(((color >>> 24) & 0xff) * Math.max(0f, Math.min(1f, f)));
                 color = (color & 0xffffff) | (alpha << 24);

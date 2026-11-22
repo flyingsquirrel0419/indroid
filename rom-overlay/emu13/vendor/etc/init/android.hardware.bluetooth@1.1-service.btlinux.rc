@@ -1,1 +1,1 @@
-# idorid: no HCI socket (btlinux needs AF_BLUETOOTH); keep the HAL down.
+# indroid: no HCI socket (btlinux needs AF_BLUETOOTH); keep the HAL down.

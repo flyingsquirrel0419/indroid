@@ -9,7 +9,7 @@ pub fn generate(
     mut out: impl Write,
 ) -> io::Result<usize> {
     let text = std::fs::read_to_string(profile)?;
-    writeln!(out, "use idorid_a64::{{Cpu, Exit, AddressSpace}};")?;
+    writeln!(out, "use indroid_a64::{{Cpu, Exit, AddressSpace}};")?;
     let mut pages = Vec::new();
     for line in text.lines().filter(|l| !l.starts_with('#')) {
         if pages.len() >= limit {
@@ -97,7 +97,7 @@ pub fn generate(
                     writeln!(out, "if entry <= {last} {{ let first = entry.max({first}); let count = ({last} + 1 - first) as u64; if end - cpu.retired >= count {{")?;
                     for (k, word) in words[start..j].iter().enumerate() {
                         let index = first + k;
-                        writeln!(out,"if entry <= {index} {{ idorid_a64::aot::aot_simd_unretired(cpu,0x{word:08x}); }}")?;
+                        writeln!(out,"if entry <= {index} {{ indroid_a64::aot::aot_simd_unretired(cpu,0x{word:08x}); }}")?;
                     }
                     writeln!(
                         out,
@@ -106,7 +106,7 @@ pub fn generate(
                     )?;
                     for (k, word) in words[start..j].iter().enumerate() {
                         let index = first + k;
-                        writeln!(out,"if entry <= {index} {{ if cpu.retired >= end {{ continue; }} idorid_a64::aot::aot_simd_simple(cpu,0x{word:08x}); }}")?;
+                        writeln!(out,"if entry <= {index} {{ if cpu.retired >= end {{ continue; }} indroid_a64::aot::aot_simd_simple(cpu,0x{word:08x}); }}")?;
                     }
                     writeln!(out, "if cpu.retired >= end {{ continue; }} }} }}")?;
                 } else {
@@ -118,9 +118,9 @@ pub fn generate(
                             "if entry <= {first} {{ return Some(Exit::Undefined(0)); }}"
                         )?;
                     } else if is_simple(word) {
-                        writeln!(out,"if entry <= {first} {{ idorid_a64::aot::aot_simd_simple(cpu,0x{word:08x}); if cpu.pc != base.wrapping_add({next}) || cpu.retired >= end {{ continue; }} }}")?;
+                        writeln!(out,"if entry <= {first} {{ indroid_a64::aot::aot_simd_simple(cpu,0x{word:08x}); if cpu.pc != base.wrapping_add({next}) || cpu.retired >= end {{ continue; }} }}")?;
                     } else {
-                        writeln!(out,"if entry <= {first} {{ if let Some(e)=idorid_a64::aot::aot_step(cpu,mem,0x{word:08x}) {{ return Some(e); }} if cpu.pc != base.wrapping_add({next}) || cpu.retired >= end || mem.generation() != generation {{ continue; }} }}")?;
+                        writeln!(out,"if entry <= {first} {{ if let Some(e)=indroid_a64::aot::aot_step(cpu,mem,0x{word:08x}) {{ return Some(e); }} if cpu.pc != base.wrapping_add({next}) || cpu.retired >= end || mem.generation() != generation {{ continue; }} }}")?;
                     }
                 }
             }
@@ -134,9 +134,9 @@ pub fn generate(
         pages.push((fields[1].to_string(), offset, hash, n));
     }
     writeln!(out, "pub const HAS_UNITS: bool = {};", !pages.is_empty())?;
-    writeln!(out,"pub fn lookup(path: &str, offset: u64) -> Option<idorid_a64::mem::AotUnit> {{ match (path, offset) {{")?;
+    writeln!(out,"pub fn lookup(path: &str, offset: u64) -> Option<indroid_a64::mem::AotUnit> {{ match (path, offset) {{")?;
     for (path, offset, hash, n) in &pages {
-        writeln!(out,"({path:?}, {offset}) => Some(idorid_a64::mem::AotUnit {{ fingerprint: {hash}, bytes: &BYTES_{n}, execute: unit_{n} }}),")?;
+        writeln!(out,"({path:?}, {offset}) => Some(indroid_a64::mem::AotUnit {{ fingerprint: {hash}, bytes: &BYTES_{n}, execute: unit_{n} }}),")?;
     }
     writeln!(out, "_ => None, }} }}")?;
     Ok(pages.len())

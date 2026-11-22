@@ -20,7 +20,7 @@ fn base_integer_o3() {
 
 #[test]
 fn base_flags_system_and_atomics() {
-    use idorid_a64::{Cpu, Exit};
+    use indroid_a64::{Cpu, Exit};
     let mem = support::Pages::new();
     mem.map(0x1000, 0x2000, 7);
     let instructions = [
@@ -149,7 +149,7 @@ fn base_sieve_o3() {
 
 #[test]
 fn exclusive_failure_clears_monitor() {
-    use idorid_a64::{Cpu, Exit};
+    use indroid_a64::{Cpu, Exit};
     let mem = support::Pages::new();
     mem.map(0x1000, 0x2000, 7);
     for (n, i) in [0xc85f7c02u32, 0xc8037c01, 0xc8037c01].iter().enumerate() {
@@ -171,7 +171,7 @@ fn exclusive_failure_clears_monitor() {
 
 #[test]
 fn tagged_data_and_untagged_instruction_fetch() {
-    use idorid_a64::{Access, Cpu, Exit};
+    use indroid_a64::{Access, Cpu, Exit};
     let mem = support::Pages::new();
     mem.map(0x1000, 0x3000, 7);
     // ldr x2,[x0]; str x2,[x1]; ldxr x2,[x0]; stxr w3,x2,[x1]
@@ -210,7 +210,7 @@ fn tagged_data_and_untagged_instruction_fetch() {
 
 #[test]
 fn tagged_simd_load() {
-    use idorid_a64::{Cpu, Exit};
+    use indroid_a64::{Cpu, Exit};
     let mem = support::Pages::new();
     mem.map(0x1000, 0x2000, 7);
     mem.write(0x1000, &0x3dc00000u32.to_le_bytes()); // ldr q0,[x0]
@@ -236,7 +236,7 @@ fn base_sha256_o3() {
     support::differential("base_sha256", &["-O3", "-mgeneral-regs-only"]);
 }
 
-/// Run with `cargo test --profile fast -p idorid-a64 --test differential benchmark_mips -- --ignored --nocapture`.
+/// Run with `cargo test --profile fast -p indroid-a64 --test differential benchmark_mips -- --ignored --nocapture`.
 #[test]
 #[ignore = "performance benchmark"]
 fn benchmark_mips() {
@@ -278,7 +278,7 @@ fn benchmark_mips() {
 
 #[test]
 fn cached_blocks_budget_fault_and_generation() {
-    use idorid_a64::{Access, Cpu, Exit};
+    use indroid_a64::{Access, Cpu, Exit};
     let mem = support::Pages::new();
     mem.map(0x1000, 0x1000, 7);
     // add x0,x0,#1; add x0,x0,#1; ldr x1,[x2]
@@ -329,7 +329,7 @@ fn cached_blocks_budget_fault_and_generation() {
 
 #[test]
 fn aot_unit_budget_fault_and_fingerprint() {
-    use idorid_a64::{Access, AddressSpace, Cpu, Exit};
+    use indroid_a64::{Access, AddressSpace, Cpu, Exit};
     use std::sync::atomic::{AtomicUsize, Ordering};
     static CALLS: AtomicUsize = AtomicUsize::new(0);
     fn unit(c: &mut Cpu, m: &dyn AddressSpace, budget: u64) -> Option<Exit> {
@@ -342,7 +342,7 @@ fn aot_unit_budget_fault_and_fingerprint() {
                 4 => 0xf9400041,
                 _ => return None,
             };
-            if let Some(e) = idorid_a64::aot::aot_step(c, m, word) {
+            if let Some(e) = indroid_a64::aot::aot_step(c, m, word) {
                 return Some(e);
             }
         }
@@ -371,7 +371,7 @@ fn aot_unit_budget_fault_and_fingerprint() {
     });
     mem.set_aot(
         1,
-        idorid_a64::mem::AotUnit {
+        indroid_a64::mem::AotUnit {
             fingerprint: hash,
             bytes: &CODE,
             execute: unit,
@@ -406,7 +406,7 @@ fn aot_unit_budget_fault_and_fingerprint() {
 
 #[test]
 fn aot_simple_simd_matches_interpreter() {
-    use idorid_a64::{Cpu, Exit};
+    use indroid_a64::{Cpu, Exit};
     let mem = support::Pages::new();
     mem.map(0x1000, 4096, 7);
     for word in [
@@ -426,7 +426,7 @@ fn aot_simple_simd_matches_interpreter() {
         }
         let mut b = a.clone();
         assert_eq!(a.run(&mem, 1), Exit::Budget);
-        idorid_a64::aot::aot_simd_simple(&mut b, word);
+        indroid_a64::aot::aot_simd_simple(&mut b, word);
         assert_eq!(a.v, b.v, "instruction {word:08x}");
         assert_eq!(a.pc, b.pc);
         assert_eq!(a.retired, b.retired);

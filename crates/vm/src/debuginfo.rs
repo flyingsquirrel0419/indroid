@@ -1,6 +1,6 @@
 //! Line numbers from DEX debug_info (only decoded when a stack trace is built).
 
-use idorid_dex::{read_sleb128, read_uleb128, Dex};
+use indroid_dex::{read_sleb128, read_uleb128, Dex};
 
 use crate::{MKind, MethodIdx, Vm};
 

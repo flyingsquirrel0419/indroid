@@ -1,6 +1,6 @@
-# idorid neo: booting real Android on iOS without JIT
+# indroid neo: booting real Android on iOS without JIT
 
-idorid's original path (`crates/vm` + `core/`) runs APKs on our own
+indroid's original path (`crates/vm` + `core/`) runs APKs on our own
 re-implementation of the Android framework. **neo** is the second path: it boots
 an unmodified **AOSP aarch64 userspace** (init → servicemanager → zygote/ART →
 system_server → SurfaceFlinger → launcher) inside the iOS app process.
@@ -39,7 +39,7 @@ system_server → SurfaceFlinger → launcher) inside the iOS app process.
 ## Milestones
 
 1. `crates/a64`: run static aarch64 Linux binaries; differential tests against
-   `qemu-aarch64-static` (`cargo test -p idorid-a64`).
+   `qemu-aarch64-static` (`cargo test -p indroid-a64`).
 2. `crates/kernel`: dynamic ELF (the guest's own `linker64`), files, threads,
    futex, signals, epoll; run AOSP command-line binaries (`toybox`, `sh`).
 3. binder, ashmem, properties; `servicemanager`, then `init second_stage`.
@@ -64,8 +64,8 @@ launcher home screen:
   the ranchu HWC composes.
 
 <p>
-  <img src="img/neo-bootanim.png" width="240" alt="Android 13 boot animation on idorid neo">
-  <img src="img/neo-launcher.png" width="240" alt="Android 13 launcher home screen on idorid neo">
+  <img src="img/neo-bootanim.png" width="240" alt="Android 13 boot animation on indroid neo">
+  <img src="img/neo-launcher.png" width="240" alt="Android 13 launcher home screen on indroid neo">
 </p>
 
 Next: touch input, the display in the iOS app, and speed (AOT).
@@ -79,7 +79,7 @@ pm disable-user com.android.bluetooth` (no bluetooth HAL).
 Speed today: ~55 M guest instructions/s (interpreter with a decoded block
 cache). In progress: build-time AOT of profile-selected hot ROM pages.
 
-`idorid neo-install <rom.zip> <dir>` installs a Google system image (sparse
+`indroid neo-install <rom.zip> <dir>` installs a Google system image (sparse
 images, super partition, ext4, APEX flattening, SELinux labels) in pure Rust;
 the iOS app uses the same code to install Android on the device.
 
@@ -87,16 +87,16 @@ the iOS app uses the same code to install Android on the device.
 
 ```
 tools/fetch-rom.sh                       # ~/aosp/rom13 (once)
-cargo build --profile fast -p idorid-cli
-./target/fast/idorid neo -- /system/bin/sh -c 'echo hi; ls /system'
-IDORID_LOGCAT=1 ./target/fast/idorid neo -- /system/bin/init second_stage
+cargo build --profile fast -p indroid-cli
+./target/fast/indroid neo -- /system/bin/sh -c 'echo hi; ls /system'
+INDROID_LOGCAT=1 ./target/fast/indroid neo -- /system/bin/init second_stage
 ```
 
-Debug switches: `kill -USR1 <idorid pid>` (dump every guest thread's
-syscall, fd and backtrace), `IDORID_GPU_DEBUG=1` (fence/sync tracing),
-`IDORID_FB_DUMP=out.png` (write composed frames), `IDORID_LOGCAT=1` (mirror logd to stderr),
-`IDORID_STRACE=1` (syscalls), `IDORID_TRACE_FAULTS=1` (registers and
-file+offset backtraces for guest faults), `IDORID_PROFILE=out.txt` (hot code
+Debug switches: `kill -USR1 <indroid pid>` (dump every guest thread's
+syscall, fd and backtrace), `INDROID_GPU_DEBUG=1` (fence/sync tracing),
+`INDROID_FB_DUMP=out.png` (write composed frames), `INDROID_LOGCAT=1` (mirror logd to stderr),
+`INDROID_STRACE=1` (syscalls), `INDROID_TRACE_FAULTS=1` (registers and
+file+offset backtraces for guest faults), `INDROID_PROFILE=out.txt` (hot code
 pages, input for AOT).
 
 `rom-overlay/` holds our patches to the ROM (layered over it read-only):

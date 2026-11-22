@@ -9,14 +9,14 @@ revisions=(d047a57228332d995d36600792fa9ccc26cf8ae6 3c1ced8a369417db591eb7cd083a
 names=(gfxstream aemu)
 for i in 0 1; do
     name=${names[$i]}; rev=${revisions[$i]}; src="$root/src/$name-$rev"
-    if [[ ! -f "$src/.idorid-revision" ]]; then
+    if [[ ! -f "$src/.indroid-revision" ]]; then
         mkdir -p "$root/git" "$src"
         if [[ ! -d "$root/git/$name.git" ]]; then
             git clone --bare --depth 1 "https://android.googlesource.com/platform/hardware/google/$name" "$root/git/$name.git"
         fi
         git -C "$root/git/$name.git" fetch --depth 1 origin "$rev"
         git -C "$root/git/$name.git" archive "$rev" | tar -x -C "$src"
-        printf '%s\n' "$rev" > "$src/.idorid-revision"
+        printf '%s\n' "$rev" > "$src/.indroid-revision"
     fi
 done
 # The pinned Meson build omits its own default graphics-agent injection,

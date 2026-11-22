@@ -2,7 +2,7 @@ package android.content.res;
 
 import java.util.ArrayList;
 
-/** idorid: parsed form of a VM-serialized binary XML file (\u0001tag \u0002name[\u0005id]\u0004value ... \u0003). */
+/** indroid: parsed form of a VM-serialized binary XML file (\u0001tag \u0002name[\u0005id]\u0004value ... \u0003). */
 public final class VMXml {
     public final String tag;
     public final String[] names, values;

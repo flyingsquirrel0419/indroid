@@ -10,7 +10,7 @@
 use std::collections::HashMap;
 use std::rc::Rc;
 
-use idorid_dex::{access, Dex, EncodedValue};
+use indroid_dex::{access, Dex, EncodedValue};
 
 use crate::heap::{ObjData, Ref};
 use crate::{Class, ClassId, ClassSrc, ClassState, FieldDef, JResult, MKind, Method, Vm};

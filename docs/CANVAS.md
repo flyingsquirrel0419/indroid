@@ -15,7 +15,7 @@ A view is serialized with `"draw": [...]` when its class overrides
 `android.view.VMViews.overridesOnDraw(View)`, which compares the resolved
 virtual method's declaring class against `android/view/View`) **or** when it
 is a stock widget we draw ourselves later. Its `type` stays whatever
-`idoridType()` returns (`"View"` for plain custom views; a `ViewGroup` that
+`indroidType()` returns (`"View"` for plain custom views; a `ViewGroup` that
 overrides onDraw keeps its group type and the drawing is painted behind its
 children).
 
@@ -26,7 +26,7 @@ canvas view's size:
 
 ```c
 // Report the laid-out size (points) of a view. Returns new UI JSON.
-char *idorid_vm_set_size(IdoridVm *vm, int32_t view_id, int32_t w, int32_t h);
+char *indroid_vm_set_size(IndroidVm *vm, int32_t view_id, int32_t w, int32_t h);
 ```
 
 Java side: `ActivityThread.setSize(int uid, int w, int h)` stores
@@ -62,7 +62,7 @@ of arrays, first element the op name. Colors are `"#aarrggbb"` strings.
 | `["line", x0, y0, x1, y1, color, sw, cap]` | `drawLine`/`drawLines`; cap `0` butt `1` round `2` square |
 | `["path", "<svg-path>", color, style, sw, fillType]` | path as SVG-like commands `M x y L x y Q x1 y1 x y C x1 y1 x2 y2 x y Z`; fillType `0` winding `1` even-odd |
 | `["text", "str", x, y, color, size, align, bold]` | baseline at y; align `0` left `1` center `2` right |
-| `["bitmap", resId, l, t, r, b, alpha]` | drawable resource drawn into dst rect (host loads via `idorid_vm_resource_bytes`) |
+| `["bitmap", resId, l, t, r, b, alpha]` | drawable resource drawn into dst rect (host loads via `indroid_vm_resource_bytes`) |
 
 Anti-aliasing is always on. Unknown ops are ignored by the host.
 
@@ -83,7 +83,7 @@ is how game loops are written), so the host's tick timer redraws at ~60 fps.
 
 ```c
 // action: 0 down, 1 up, 2 move, 3 cancel; x/y in view-local points.
-char *idorid_vm_touch(IdoridVm *vm, int32_t view_id, int32_t action, float x, float y);
+char *indroid_vm_touch(IndroidVm *vm, int32_t view_id, int32_t action, float x, float y);
 ```
 
 Java: `ActivityThread.touch(int uid, int action, float x, float y)` builds a
@@ -94,13 +94,13 @@ Java: `ActivityThread.touch(int uid, int action, float x, float y)` builds a
 The host forwards touches only for views whose JSON has `"touch": true`,
 emitted when the view has an `OnTouchListener` or its class overrides
 `onTouchEvent(MotionEvent)` (native `VMViews.overridesOnTouch(View)`). Other
-views keep the plain tap → `idorid_vm_click` path.
+views keep the plain tap → `indroid_vm_click` path.
 
 ## Host rendering
 
 `CanvasView: UIView` with `draw(_:)` replaying the ops on the current
 `CGContext` (state stack via `saveGState`), `isOpaque = false`, redraw via
 `setNeedsDisplay()` when the op array changed. Reports its bounds through
-`idorid_vm_set_size` from `layoutSubviews` when they change. If a canvas
+`indroid_vm_set_size` from `layoutSubviews` when they change. If a canvas
 view's layout width/height is `wrap`, the host gives it 0 intrinsic size
 unless `minWidth`/`minHeight` are set; `match`/weight/dp sizes work normally.

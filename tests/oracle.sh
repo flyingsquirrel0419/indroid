@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 # Oracle test: every tests/java/<Name>.java is compiled once, run on the host
-# JVM and on idorid (via d8), and the outputs must be identical.
+# JVM and on indroid (via d8), and the outputs must be identical.
 set -uo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SDK="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-$HOME/android-sdk}}"
 D8="$(ls -d "$SDK"/build-tools/*/ | sort -V | tail -1)d8"
 ANDROID_JAR="$(ls -d "$SDK"/platforms/android-*/ | sort -V | tail -1)android.jar"
-BIN="$ROOT/target/release/idorid"
+BIN="$ROOT/target/release/indroid"
 OUT="$ROOT/tests/out"
 mkdir -p "$OUT"
-cargo build -q --release -p idorid-cli --manifest-path "$ROOT/Cargo.toml" || exit 1
+cargo build -q --release -p indroid-cli --manifest-path "$ROOT/Cargo.toml" || exit 1
 pass=0; fail=0; failed=()
 for src in "$ROOT"/tests/java/${1:-*}.java; do
   name="$(basename "$src" .java)"

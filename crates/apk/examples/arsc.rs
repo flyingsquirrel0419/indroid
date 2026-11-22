@@ -1,6 +1,6 @@
 fn main() {
     let p = std::env::args().nth(1).unwrap();
-    let apk = idorid_apk::Apk::open(std::fs::read(p).unwrap()).unwrap();
+    let apk = indroid_apk::Apk::open(std::fs::read(p).unwrap()).unwrap();
     match apk.resources() {
         Ok(r) => {
             for id in [

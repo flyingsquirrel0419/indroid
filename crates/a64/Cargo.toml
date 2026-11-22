@@ -1,6 +1,6 @@
 [package]
-name = "idorid-a64"
-description = "AArch64 user-mode CPU interpreter (no JIT) for idorid"
+name = "indroid-a64"
+description = "AArch64 user-mode CPU interpreter (no JIT) for indroid"
 version.workspace = true
 edition.workspace = true
 license.workspace = true

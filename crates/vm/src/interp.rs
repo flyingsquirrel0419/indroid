@@ -5,7 +5,7 @@
 use std::rc::Rc;
 
 use crate::{ClassSrc, Code, Frame, JResult, MKind, MethodIdx, ObjData, Throw, Vm};
-use idorid_dex::NO_INDEX;
+use indroid_dex::NO_INDEX;
 
 const NPE: &str = "Ljava/lang/NullPointerException;";
 const AIOOBE: &str = "Ljava/lang/ArrayIndexOutOfBoundsException;";
@@ -373,7 +373,7 @@ impl Vm {
                     26 => {
                         let c = self.resolve_type(dex, w!(1))?;
                         if self.class(c).flags
-                            & (idorid_dex::access::ABSTRACT | idorid_dex::access::INTERFACE)
+                            & (indroid_dex::access::ABSTRACT | indroid_dex::access::INTERFACE)
                             != 0
                         {
                             let msg = self.class(c).java_name();

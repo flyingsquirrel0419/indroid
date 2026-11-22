@@ -20,8 +20,8 @@ public class LayoutInflater {
         if (o instanceof LayoutInflater) return (LayoutInflater) o;
         return new LayoutInflater(c);
     }
-    /** idorid: a plain inflater for contexts that cache one. */
-    public static LayoutInflater idoridCreate(Context c) { return new LayoutInflater(c); }
+    /** indroid: a plain inflater for contexts that cache one. */
+    public static LayoutInflater indroidCreate(Context c) { return new LayoutInflater(c); }
     public Context getContext() { return ctx; }
     public LayoutInflater cloneInContext(Context c) { return new LayoutInflater(this, c); }
     public final Factory getFactory() { return factory; }
@@ -151,7 +151,7 @@ public class LayoutInflater {
             try { c = Class.forName(name); } catch (ClassNotFoundException e) { continue; }
             return (View) VMInflate.construct(c, ctx, attrs);
         }
-        android.util.Log.w("idorid", "Unsupported view <" + tag + ">, using FrameLayout");
+        android.util.Log.w("indroid", "Unsupported view <" + tag + ">, using FrameLayout");
         return new android.widget.FrameLayout(ctx, attrs);
     }
     /** Common AndroidX widgets map onto framework equivalents when the app doesn't bundle them. */

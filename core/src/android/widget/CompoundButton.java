@@ -89,15 +89,15 @@ public abstract class CompoundButton extends Button implements Checkable {
         buttonDrawable.setBounds(0, top, w, top + h);
         buttonDrawable.draw(c);
     }
-    protected boolean idoridNeedsCanvas() { return super.idoridNeedsCanvas() || hasDrawnButton(); }
+    protected boolean indroidNeedsCanvas() { return super.indroidNeedsCanvas() || hasDrawnButton(); }
     void buttonDefaults() {
         if (getMinimumHeight() == 0) setMinimumHeight(48);
         if (getGravity() == 0) setGravity(android.view.Gravity.START | android.view.Gravity.CENTER_VERTICAL);
     }
-    int idoridExtraWidth() { if (hasDrawnButton() || android.view.VMViews.overridesOnDraw(this)) return buttonWidth(); return text.length() == 0 ? 32 : 40; }
-    int idoridExtraHeight() { return hasDrawnButton() ? Math.max(0, buttonDrawable.getIntrinsicHeight()) : 32; }
-    protected void idoridProps(StringBuilder sb) {
-        super.idoridProps(sb);
+    int indroidExtraWidth() { if (hasDrawnButton() || android.view.VMViews.overridesOnDraw(this)) return buttonWidth(); return text.length() == 0 ? 32 : 40; }
+    int indroidExtraHeight() { return hasDrawnButton() ? Math.max(0, buttonDrawable.getIntrinsicHeight()) : 32; }
+    protected void indroidProps(StringBuilder sb) {
+        super.indroidProps(sb);
         Json.key(sb, "checked"); sb.append(checked);
         Json.key(sb, "clickable"); sb.append("true");
         // the app (or Java) draws the check mark itself: the host must not add a native one

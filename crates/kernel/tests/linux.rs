@@ -26,7 +26,7 @@ fn run(name: &str) -> Option<String> {
     }
     let out = Arc::new(Mutex::new(Vec::<u8>::new()));
     let o2 = out.clone();
-    let k = idorid_kernel::Kernel::new(idorid_kernel::Config {
+    let k = indroid_kernel::Kernel::new(indroid_kernel::Config {
         rom: rom.clone(),
         state: tmp.join("state"),
         overlays: vec![],

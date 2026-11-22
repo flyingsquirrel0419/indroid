@@ -21,10 +21,10 @@ jobs:
       - run: ios/build-ipa.sh
       - uses: actions/upload-artifact@v4
         with:
-          name: idorid.ipa
-          path: build/idorid.ipa
+          name: indroid.ipa
+          path: build/indroid.ipa
           if-no-files-found: error
       - if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: build/idorid.ipa
+          files: build/indroid.ipa

@@ -207,7 +207,7 @@ impl Node for InputReader {
             }
             0x03 | 0x04 => Ok(0), // EVIOCGREP / EVIOCSREP
             0x06 => put(&[self.dev.name.as_bytes(), b"\0"].concat()), // EVIOCGNAME
-            0x07 => put(b"idorid/input0\0"), // EVIOCGPHYS
+            0x07 => put(b"indroid/input0\0"), // EVIOCGPHYS
             0x08 => put(b"\0"),   // EVIOCGUNIQ
             0x09 => put(&set_bits(if touch { &[1] } else { &[] }, size)), // EVIOCGPROP: INPUT_PROP_DIRECT
             0x18 | 0x19 | 0x1a | 0x1b => put(&vec![0u8; size]), // EVIOCGKEY/LED/SND/SW state

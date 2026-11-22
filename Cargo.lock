@@ -109,88 +109,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ed5909b6e89a2db4456e54cd5f673791d7eca6732202bbf2a9cc504fe2f9b84a"
 
 [[package]]
-name = "idorid-a64"
-version = "1.0.0"
-
-[[package]]
-name = "idorid-aot"
-version = "1.0.0"
-dependencies = [
- "idorid-a64",
-]
-
-[[package]]
-name = "idorid-apk"
-version = "1.0.0"
-dependencies = [
- "zip",
-]
-
-[[package]]
-name = "idorid-cli"
-version = "1.0.0"
-dependencies = [
- "idorid-apk",
- "idorid-dex",
- "idorid-ffi",
- "idorid-gpu",
- "idorid-kernel",
- "idorid-rom",
- "idorid-vm",
- "libc",
- "serde_json",
-]
-
-[[package]]
-name = "idorid-dex"
-version = "1.0.0"
-
-[[package]]
-name = "idorid-ffi"
-version = "1.0.0"
-dependencies = [
- "idorid-apk",
- "idorid-kernel",
- "idorid-rom",
- "idorid-vm",
- "serde_json",
-]
-
-[[package]]
-name = "idorid-gpu"
-version = "1.0.0"
-dependencies = [
- "idorid-kernel",
- "libc",
- "png",
-]
-
-[[package]]
-name = "idorid-kernel"
-version = "1.0.0"
-dependencies = [
- "idorid-a64",
- "idorid-aot",
- "libc",
- "parking_lot",
- "regex",
-]
-
-[[package]]
-name = "idorid-rom"
-version = "1.0.0"
-dependencies = [
- "zip",
-]
-
-[[package]]
-name = "idorid-vm"
-version = "1.0.0"
-dependencies = [
- "idorid-dex",
-]
-
-[[package]]
 name = "indexmap"
 version = "2.14.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -198,6 +116,88 @@ checksum = "cc4e190f5d26ca7051642629da2c52fc03bde85a03197c99408dcd291734c855"
 dependencies = [
  "equivalent",
  "hashbrown",
+]
+
+[[package]]
+name = "indroid-a64"
+version = "1.0.0"
+
+[[package]]
+name = "indroid-aot"
+version = "1.0.0"
+dependencies = [
+ "indroid-a64",
+]
+
+[[package]]
+name = "indroid-apk"
+version = "1.0.0"
+dependencies = [
+ "zip",
+]
+
+[[package]]
+name = "indroid-cli"
+version = "1.0.0"
+dependencies = [
+ "indroid-apk",
+ "indroid-dex",
+ "indroid-ffi",
+ "indroid-gpu",
+ "indroid-kernel",
+ "indroid-rom",
+ "indroid-vm",
+ "libc",
+ "serde_json",
+]
+
+[[package]]
+name = "indroid-dex"
+version = "1.0.0"
+
+[[package]]
+name = "indroid-ffi"
+version = "1.0.0"
+dependencies = [
+ "indroid-apk",
+ "indroid-kernel",
+ "indroid-rom",
+ "indroid-vm",
+ "serde_json",
+]
+
+[[package]]
+name = "indroid-gpu"
+version = "1.0.0"
+dependencies = [
+ "indroid-kernel",
+ "libc",
+ "png",
+]
+
+[[package]]
+name = "indroid-kernel"
+version = "1.0.0"
+dependencies = [
+ "indroid-a64",
+ "indroid-aot",
+ "libc",
+ "parking_lot",
+ "regex",
+]
+
+[[package]]
+name = "indroid-rom"
+version = "1.0.0"
+dependencies = [
+ "zip",
+]
+
+[[package]]
+name = "indroid-vm"
+version = "1.0.0"
+dependencies = [
+ "indroid-dex",
 ]
 
 [[package]]

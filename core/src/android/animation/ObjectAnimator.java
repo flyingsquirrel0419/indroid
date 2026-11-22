@@ -7,7 +7,7 @@ public class ObjectAnimator extends ValueAnimator {
     private float[] pendingFloats;
     public static ObjectAnimator ofPropertyValuesHolder(Object target, PropertyValuesHolder... values) {
         ObjectAnimator a = new ObjectAnimator(); a.target=target;
-        if (values.length > 0) { PropertyValuesHolder p=values[0]; a.propertyName=p.getPropertyName(); a.property=p.idoridProperty(); if (p.idoridFloats()!=null) { a.pendingFloats=p.idoridFloats(); a.setFloatValues(p.idoridFloats()); } else if (p.idoridInts()!=null) a.setIntValues(p.idoridInts()); }
+        if (values.length > 0) { PropertyValuesHolder p=values[0]; a.propertyName=p.getPropertyName(); a.property=p.indroidProperty(); if (p.indroidFloats()!=null) { a.pendingFloats=p.indroidFloats(); a.setFloatValues(p.indroidFloats()); } else if (p.indroidInts()!=null) a.setIntValues(p.indroidInts()); }
         return a;
     }
     public void setAutoCancel(boolean cancel) {}

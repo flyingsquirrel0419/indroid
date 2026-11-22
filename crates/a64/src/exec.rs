@@ -1314,7 +1314,7 @@ pub fn aot_step(cpu: &mut Cpu, mem: &dyn AddressSpace, insn: u32) -> Option<Exit
 pub(crate) fn run<A: AddressSpace + ?Sized>(cpu: &mut Cpu, mem: &A, budget: u64) -> Exit {
     // Retain the original executor for comparative profiling and debugging.
     static DISABLE_CACHE: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
-    if *DISABLE_CACHE.get_or_init(|| std::env::var_os("IDORID_A64_DISABLE_CACHE").is_some()) {
+    if *DISABLE_CACHE.get_or_init(|| std::env::var_os("INDROID_A64_DISABLE_CACHE").is_some()) {
         return run_uncached(cpu, mem, budget);
     }
     let mut cache = core::mem::take(&mut cpu.tlb.block_cache);
@@ -1398,7 +1398,7 @@ fn run_cached<A: AddressSpace + ?Sized>(
             if let Some(unit) = block.aot {
                 static TRACE: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
                 static REPORTED: std::sync::Once = std::sync::Once::new();
-                if *TRACE.get_or_init(|| std::env::var_os("IDORID_AOT_TRACE").is_some()) {
+                if *TRACE.get_or_init(|| std::env::var_os("INDROID_AOT_TRACE").is_some()) {
                     REPORTED.call_once(|| eprintln!("AOT unit entered at {:#x}", cpu.pc));
                 }
                 cpu.retired = retired;

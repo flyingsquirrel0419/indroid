@@ -5,7 +5,7 @@ public class Paint {
  private int color=0xff000000; private Style style=Style.FILL; private Align align=Align.LEFT; private Cap cap=Cap.BUTT;
  private float strokeWidth=0, textSize=16, letterSpacing, textScale=1, textSkew, miter=4; private int flags; private String features; private Shader shader; private ColorFilter filter; private Xfermode xfer; private PathEffect effect; private Join join=Join.MITER; private boolean aa; private Typeface typeface;
  public Paint() {} public Paint(int flags) { this.flags=flags; aa=(flags & ANTI_ALIAS_FLAG)!=0; } public Paint(Paint p) { set(p); }
- public void setColor(int c) { color=c; } public int getColor() { return color; } public int idoridColor() { return filter instanceof PorterDuffColorFilter ? ((PorterDuffColorFilter)filter).color : shader!=null ? shader.color : color; }
+ public void setColor(int c) { color=c; } public int getColor() { return color; } public int indroidColor() { return filter instanceof PorterDuffColorFilter ? ((PorterDuffColorFilter)filter).color : shader!=null ? shader.color : color; }
  public void setARGB(int a,int r,int g,int b) { color=Color.argb(a,r,g,b); }
  public void setAlpha(int a) { color=(color & 0xffffff) | ((a & 255)<<24); } public int getAlpha() { return color >>> 24; }
  public void setStyle(Style s) { style=s; } public Style getStyle() { return style; }

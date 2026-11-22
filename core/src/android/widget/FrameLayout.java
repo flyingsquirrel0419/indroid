@@ -106,5 +106,5 @@ public class FrameLayout extends ViewGroup {
             child.layout(left, top, left + w, top + h);
         }
     }
-    protected String idoridType() { return "FrameLayout"; }
+    protected String indroidType() { return "FrameLayout"; }
 }

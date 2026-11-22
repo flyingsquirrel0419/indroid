@@ -90,14 +90,14 @@ ro.incremental.enable=yes
 # Match the emulator display density advertised by qemu-props.
 ro.sf.lcd_density=440
 
-# idorid: no JIT on an interpreter (code is interpreted anyway; JIT code
+# indroid: no JIT on an interpreter (code is interpreted anyway; JIT code
 # caches are dual-mapped and only add work).
 dalvik.vm.usejit=false
 dalvik.vm.usejitprofiles=false
-# idorid: an interpreted CPU is slower than hardware; scale framework
+# indroid: an interpreted CPU is slower than hardware; scale framework
 # timeouts (Watchdog, input dispatch, binder waits).
 ro.hw_timeout_multiplier=5
-# idorid: no mount namespaces; app data isolation (tmpfs over /data/user in
+# indroid: no mount namespaces; app data isolation (tmpfs over /data/user in
 # a private namespace) cannot work.
 persist.zygote.app_data_isolation=false
 persist.sys.vold_app_data_isolation_enabled=false

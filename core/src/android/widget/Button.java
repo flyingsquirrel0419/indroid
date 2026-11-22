@@ -13,5 +13,5 @@ public class Button extends TextView {
         if (getMinimumWidth() == 0) setMinimumWidth(88);
         if (getGravity() == 0) setGravity(android.view.Gravity.CENTER);
     }
-    protected String idoridType() { return "Button"; }
+    protected String indroidType() { return "Button"; }
 }

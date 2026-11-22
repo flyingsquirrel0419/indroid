@@ -6,7 +6,7 @@ members = ["crates/aot", "crates/a64", "crates/rom", "crates/kernel", "crates/gp
 version = "1.0.0"
 edition = "2021"
 license = "Apache-2.0"
-repository = "https://github.com/flyingsquirrel0419/idorid"
+repository = "https://github.com/flyingsquirrel0419/indroid"
 
 [profile.release]
 opt-level = 3
@@ -35,7 +35,7 @@ panic = "unwind"
 
 # The CPU interpreter and kernel are far too slow unoptimized (tests boot real
 # guest programs).
-[profile.dev.package.idorid-a64]
+[profile.dev.package.indroid-a64]
 opt-level = 3
-[profile.dev.package.idorid-kernel]
+[profile.dev.package.indroid-kernel]
 opt-level = 2

@@ -1,8 +1,9 @@
 import UIKit
 
-/// "Real Android" (idorid neo): downloads the Android 13 arm64 system image
-/// from Google's public SDK repository on first use, installs it on the
-/// device, boots init and shows the console/logcat.
+/// indroid: boots real Android 13 (arm64) as soon as the app opens. The first
+/// launch downloads the system image from Google's public SDK repository and
+/// installs it; every launch after that boots straight away. Shows the
+/// console/logcat while Android starts.
 final class NeoController: UIViewController {
     static let imageURL = URL(string: "https://dl.google.com/android/repository/sys-img/android/arm64-v8a-33_r02.zip")!
     private let fm = FileManager.default
@@ -21,7 +22,6 @@ final class NeoController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "Android 13 (neo)"
         view.backgroundColor = .systemBackground
         textView.isEditable = false
         textView.font = .monospacedSystemFont(ofSize: 10, weight: .regular)
@@ -45,12 +45,21 @@ final class NeoController: UIViewController {
         refreshButton()
     }
 
+    private var started = false
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        guard !started else { return }
+        started = true
+        primary()
+    }
+
     private func refreshButton() {
         if booted {
             button.setTitle("Running", for: .normal)
             button.isEnabled = false
         } else if romReady {
             button.setTitle("Boot Android", for: .normal)
+            button.isEnabled = true
             status.text = "Android 13 system image installed."
         } else {
             button.setTitle("Download Android 13 (676 MB)", for: .normal)
@@ -83,7 +92,12 @@ final class NeoController: UIViewController {
         let task = URLSession.shared.downloadTask(with: Self.imageURL) { [weak self] tmp, _, error in
             guard let self else { return }
             guard let tmp, error == nil else {
-                DispatchQueue.main.async { self.status.text = "Download failed: \(error?.localizedDescription ?? "?")"; self.button.isEnabled = true }
+                DispatchQueue.main.async {
+                    self.timer?.invalidate()
+                    self.status.text = "Download failed: \(error?.localizedDescription ?? "?")"
+                    self.button.setTitle("Retry download", for: .normal)
+                    self.button.isEnabled = true
+                }
                 return
             }
             let zip = self.base.appendingPathComponent("image.zip")
@@ -103,7 +117,7 @@ final class NeoController: UIViewController {
 
     private func install(_ zip: URL) {
         let ctx = Unmanaged.passUnretained(self).toOpaque()
-        let rc = idorid_neo_install(zip.path, rom.path, base.appendingPathComponent("work").path, { ctx, text, len in
+        let rc = indroid_neo_install(zip.path, rom.path, base.appendingPathComponent("work").path, { ctx, text, len in
             guard let ctx, let text else { return }
             let me = Unmanaged<NeoController>.fromOpaque(ctx).takeUnretainedValue()
             let s = String(decoding: UnsafeBufferPointer(start: text, count: len), as: UTF8.self)
@@ -116,6 +130,7 @@ final class NeoController: UIViewController {
             self.button.isEnabled = true
             self.status.text = rc == 0 ? "Installed." : "Install failed (see log)."
             self.refreshButton()
+            if rc == 0 { self.boot() }
         }
     }
 
@@ -126,14 +141,14 @@ final class NeoController: UIViewController {
         let overlays = [overlay.appendingPathComponent("emu13").path, overlay.appendingPathComponent("common").path].joined(separator: ":")
         try? fm.createDirectory(at: state, withIntermediateDirectories: true)
         let ctx = Unmanaged.passUnretained(self).toOpaque()
-        let rc = idorid_neo_boot(rom.path, state.path, overlays, nil, { ctx, text, len in
+        let rc = indroid_neo_boot(rom.path, state.path, overlays, nil, { ctx, text, len in
             guard let ctx, let text else { return }
             let me = Unmanaged<NeoController>.fromOpaque(ctx).takeUnretainedValue()
             me.append(String(decoding: UnsafeBufferPointer(start: text, count: len), as: UTF8.self))
         }, ctx)
         status.text = rc == 0 ? "Booting Android… (console and logcat below)" : "Boot failed."
         timer = Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { [weak self] _ in
-            let n = idorid_neo_instructions()
+            let n = indroid_neo_instructions()
             self?.status.text = String(format: "Booting Android… %.1f G guest instructions retired by exited threads", Double(n) / 1e9)
         }
     }

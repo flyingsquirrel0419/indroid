@@ -20,7 +20,7 @@ public class ContextThemeWrapper extends ContextWrapper {
         if (overrideConfiguration != null) throw new IllegalStateException("Override configuration has already been set");
         overrideConfiguration = new Configuration(c);
     }
-    public Configuration idoridOverrideConfiguration() { return overrideConfiguration; }
+    public Configuration indroidOverrideConfiguration() { return overrideConfiguration; }
     public Resources getResources() { return getBaseContext().getResources(); }
     public AssetManager getAssets() { return getResources().getAssets(); }
     public void setTheme(int resid) {

@@ -1,12 +1,12 @@
 //! Run static ELFs through generated units and compare with QEMU.
 #[path = "../../a64/tests/support/mod.rs"]
 mod support;
-use idorid_a64::{AddressSpace, Cpu, Exit};
+use indroid_a64::{AddressSpace, Cpu, Exit};
 use std::sync::{
     atomic::{AtomicUsize, Ordering},
     Mutex,
 };
-static UNIT: Mutex<Option<idorid_a64::mem::AotUnit>> = Mutex::new(None);
+static UNIT: Mutex<Option<indroid_a64::mem::AotUnit>> = Mutex::new(None);
 static CALLS: AtomicUsize = AtomicUsize::new(0);
 fn counted(c: &mut Cpu, m: &dyn AddressSpace, b: u64) -> Option<Exit> {
     CALLS.fetch_add(1, Ordering::Relaxed);
@@ -14,14 +14,14 @@ fn counted(c: &mut Cpu, m: &dyn AddressSpace, b: u64) -> Option<Exit> {
 }
 #[test]
 fn generated_static_elf_matches_qemu() {
-    let Some(root) = std::env::var_os("IDORID_AOT_ROM") else {
+    let Some(root) = std::env::var_os("INDROID_AOT_ROM") else {
         eprintln!("no generated test profile");
         return;
     };
     let mut tested = 0;
     for name in ["hello", "simd_crypto"] {
         let guest_path = format!("/bin/{name}");
-        let Some(unit) = idorid_aot::lookup(&guest_path, 0) else {
+        let Some(unit) = indroid_aot::lookup(&guest_path, 0) else {
             continue;
         };
         *UNIT.lock().unwrap() = Some(unit);
@@ -34,7 +34,7 @@ fn generated_static_elf_matches_qemu() {
             .unwrap();
         let o = support::run_elf_with_aot(&elf, &[name], 20_000_000_000, |offset| {
             if offset == 0 {
-                Some(idorid_a64::mem::AotUnit {
+                Some(indroid_a64::mem::AotUnit {
                     execute: counted,
                     ..unit
                 })
@@ -55,11 +55,11 @@ fn generated_static_elf_matches_qemu() {
 
 #[test]
 fn generated_simd_batch_preserves_budgets() {
-    use idorid_a64::{Cpu, Exit};
-    let Some(root) = std::env::var_os("IDORID_AOT_ROM") else {
+    use indroid_a64::{Cpu, Exit};
+    let Some(root) = std::env::var_os("INDROID_AOT_ROM") else {
         return;
     };
-    let Some(unit) = idorid_aot::lookup("/bin/batch", 0) else {
+    let Some(unit) = indroid_aot::lookup("/bin/batch", 0) else {
         return;
     };
     let bytes = std::fs::read(std::path::Path::new(&root).join("bin/batch")).unwrap();

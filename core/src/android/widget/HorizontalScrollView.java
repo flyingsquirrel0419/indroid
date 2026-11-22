@@ -39,6 +39,6 @@ public class HorizontalScrollView extends FrameLayout {
             child.measure(MeasureSpec.makeMeasureSpec(avail, MeasureSpec.EXACTLY), chs);
         }
     }
-    protected String idoridType() { return "HorizontalScrollView"; }
+    protected String indroidType() { return "HorizontalScrollView"; }
     public HorizontalScrollView(Context c, AttributeSet a, int s, int r) { this(c,a,s); }
 }

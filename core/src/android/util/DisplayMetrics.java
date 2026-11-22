@@ -1,5 +1,5 @@
 package android.util;
-/** idorid lays out in points: 1 px == 1 dp == 1 iOS point. */
+/** indroid lays out in points: 1 px == 1 dp == 1 iOS point. */
 public class DisplayMetrics {
     public static final int DENSITY_DEFAULT = 160;
     public float density = 1f, scaledDensity = 1f, xdpi = 160f, ydpi = 160f;

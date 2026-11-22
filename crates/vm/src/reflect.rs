@@ -3,7 +3,7 @@
 
 use std::collections::HashMap;
 
-use idorid_dex::access;
+use indroid_dex::access;
 
 use crate::heap::{ObjData, Ref};
 use crate::{ClassId, JResult, NativeFn, Vm};
