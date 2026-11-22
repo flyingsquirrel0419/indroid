@@ -357,6 +357,7 @@ fn run_app(path: &str, script: &[String], stats: bool) -> ExitCode {
 /// runs a guest aarch64 Linux program from the ROM on the neo kernel.
 fn neo(args: &[String]) -> ExitCode {
     use std::sync::Arc;
+    indroid_kernel::raise_nofile_limit();
     let home = std::env::var("HOME").unwrap_or_default();
     let mut rom = std::path::PathBuf::from(format!("{home}/aosp/rom13"));
     let mut state = std::path::PathBuf::from(format!("{home}/aosp/state13"));

@@ -344,6 +344,8 @@ pub fn host_err(e: &std::io::Error) -> i64 {
                 Some(libc::ELOOP) => ELOOP,
                 Some(libc::ENAMETOOLONG) => ENAMETOOLONG,
                 Some(libc::ENOSPC) => ENOSPC,
+                Some(libc::EMFILE) => EMFILE,
+                Some(libc::ENFILE) => ENFILE,
                 _ => EIO,
             },
         },

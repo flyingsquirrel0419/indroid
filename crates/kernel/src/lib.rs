@@ -580,3 +580,33 @@ pub fn path_exists(p: &Path) -> bool {
 fn unused() -> i64 {
     ENOSYS
 }
+
+/// Raise the host's open-file limit as far as it allows. Guest files, sockets and
+/// pipes are host descriptors, and Android's boot keeps well over a thousand open;
+/// iOS starts processes with a soft limit of only 256, which surfaced as guest EIO
+/// ("I/O error" opening framework jars) and a crash-looping zygote.
+pub fn raise_nofile_limit() -> u64 {
+    // SAFETY: plain getrlimit/setrlimit calls on a local struct.
+    unsafe {
+        let mut lim: libc::rlimit = std::mem::zeroed();
+        if libc::getrlimit(libc::RLIMIT_NOFILE, &mut lim) != 0 {
+            return 0;
+        }
+        // Darwin rejects soft limits above OPEN_MAX (10240) even when the hard limit is higher.
+        let target = lim.rlim_max.min(if cfg!(target_vendor = "apple") {
+            10240
+        } else {
+            65536
+        });
+        if target > lim.rlim_cur {
+            let want = libc::rlimit {
+                rlim_cur: target,
+                rlim_max: lim.rlim_max,
+            };
+            if libc::setrlimit(libc::RLIMIT_NOFILE, &want) == 0 {
+                return target as u64;
+            }
+        }
+        lim.rlim_cur as u64
+    }
+}
