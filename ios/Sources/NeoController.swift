@@ -1,4 +1,5 @@
 import UIKit
+import os
 
 /// indroid: Android 13 (arm64) starts the moment the app opens. The first launch
 /// downloads the system image from Google's public SDK repository and installs it;
@@ -8,12 +9,10 @@ import UIKit
 final class NeoController: UIViewController {
     static let imageURL = URL(string: "https://dl.google.com/android/repository/sys-img/android/arm64-v8a-33_r02.zip")!
     private let fm = FileManager.default
-    private var log = ""
-    private var pendingFlush = false
     private var timer: Timer?
     private let display = DisplayView()
     private let splash = UIView()
-    private let spinner = UIActivityIndicatorView(style: .medium)
+    private let progress = UIProgressView(progressViewStyle: .default)
     private let status = UILabel()
     private let retryButton = UIButton(type: .system)
     private let logButton = UIButton(type: .system)
@@ -21,7 +20,6 @@ final class NeoController: UIViewController {
     private var latestFrame: (Int, Int, Data)?
     private let frameLock = NSLock()
     private var sawFrame = false
-    private weak var logController: LogController?
 
     private var base: URL { fm.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent("neo", isDirectory: true) }
     private var rom: URL { base.appendingPathComponent("rom13", isDirectory: true) }
@@ -45,8 +43,10 @@ final class NeoController: UIViewController {
         splash.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(splash)
 
-        spinner.hidesWhenStopped = true
-        spinner.startAnimating()
+        progress.progress = 0
+        progress.translatesAutoresizingMaskIntoConstraints = false
+        progress.isAccessibilityElement = true
+        progress.accessibilityLabel = "Progress"
         status.font = .preferredFont(forTextStyle: .footnote)
         status.adjustsFontForContentSizeCategory = true
         status.textColor = .secondaryLabel
@@ -61,13 +61,17 @@ final class NeoController: UIViewController {
         retryButton.isHidden = true
         retryButton.addTarget(self, action: #selector(retryTapped), for: .touchUpInside)
 
+        // Always available: the log is how a stuck or failed start gets diagnosed.
         var logConfig = UIButton.Configuration.plain()
-        logConfig.title = "Show Log"
+        logConfig.title = "Log"
+        logConfig.image = UIImage(systemName: "doc.text")
+        logConfig.imagePadding = 6
         logButton.configuration = logConfig
-        logButton.isHidden = true
+        logButton.translatesAutoresizingMaskIntoConstraints = false
         logButton.addTarget(self, action: #selector(showLog), for: .touchUpInside)
+        splash.addSubview(logButton)
 
-        let stack = UIStackView(arrangedSubviews: [spinner, status, retryButton, logButton])
+        let stack = UIStackView(arrangedSubviews: [status, progress, retryButton])
         stack.axis = .vertical
         stack.alignment = .center
         stack.spacing = 12
@@ -87,8 +91,11 @@ final class NeoController: UIViewController {
             stack.centerYAnchor.constraint(equalTo: splash.centerYAnchor),
             stack.leadingAnchor.constraint(greaterThanOrEqualTo: splash.layoutMarginsGuide.leadingAnchor, constant: 16),
             stack.trailingAnchor.constraint(lessThanOrEqualTo: splash.layoutMarginsGuide.trailingAnchor, constant: -16),
+            progress.widthAnchor.constraint(equalToConstant: 240),
             retryButton.heightAnchor.constraint(greaterThanOrEqualToConstant: 44),
             logButton.heightAnchor.constraint(greaterThanOrEqualToConstant: 44),
+            logButton.trailingAnchor.constraint(equalTo: splash.safeAreaLayoutGuide.trailingAnchor, constant: -8),
+            logButton.topAnchor.constraint(equalTo: splash.safeAreaLayoutGuide.topAnchor, constant: 4),
         ])
     }
 
@@ -102,26 +109,30 @@ final class NeoController: UIViewController {
 
     private func start() {
         retryButton.isHidden = true
-        logButton.isHidden = true
-        spinner.startAnimating()
-        if romReady { boot() } else { download() }
+        progress.isHidden = false
+        setProgress(0)
+        LogStore.shared.append("[app] start: ROM \(romReady ? "installed" : "missing")\n")
+        if romReady { boot(from: 0) } else { download() }
     }
 
     @objc private func retryTapped() { start() }
 
-    /// Shows the console/logcat. It is a diagnostic, so it is not part of the normal flow.
+    /// Console and logcat: selectable, copyable, shareable as a file.
     @objc private func showLog() {
-        let vc = LogController(text: log)
-        logController = vc
-        present(UINavigationController(rootViewController: vc), animated: true)
+        present(UINavigationController(rootViewController: LogController()), animated: true)
+    }
+
+    private func setProgress(_ value: Float) {
+        progress.setProgress(min(max(value, progress.progress), 1), animated: true)
+        progress.accessibilityValue = "\(Int(progress.progress * 100)) percent"
     }
 
     private func fail(_ message: String) {
         timer?.invalidate()
-        spinner.stopAnimating()
+        progress.isHidden = true
         status.text = message
         retryButton.isHidden = false
-        logButton.isHidden = false
+        LogStore.shared.append("[app] \(message)\n")
     }
 
     /// Called on a renderer thread for every composed frame. Copies the pixels
@@ -157,19 +168,7 @@ final class NeoController: UIViewController {
         }
     }
 
-    private func append(_ s: String) {
-        DispatchQueue.main.async {
-            self.log += s
-            if self.log.count > 400_000 { self.log = String(self.log.suffix(300_000)) }
-            if !self.pendingFlush {
-                self.pendingFlush = true
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-                    self.pendingFlush = false
-                    self.logController?.update(self.log)
-                }
-            }
-        }
-    }
+    private func append(_ s: String) { LogStore.shared.append(s) }
 
     private func download() {
         status.text = "Preparing Android 13 for first launch…"
@@ -189,6 +188,7 @@ final class NeoController: UIViewController {
             DispatchQueue.main.async {
                 self.timer?.invalidate()
                 self.status.text = "Installing Android…"
+                self.setProgress(0.62)
             }
             DispatchQueue.global(qos: .userInitiated).async { self.install(zip) }
         }
@@ -197,6 +197,7 @@ final class NeoController: UIViewController {
             guard let self, task.state == .running, task.countOfBytesExpectedToReceive > 0 else { return }
             let p = Double(task.countOfBytesReceived) / Double(task.countOfBytesExpectedToReceive)
             self.status.text = String(format: "Downloading Android 13 · %.0f%%", p * 100)
+            self.setProgress(Float(p) * 0.6)
         }
     }
 
@@ -210,12 +211,13 @@ final class NeoController: UIViewController {
         }, ctx)
         try? fm.removeItem(at: zip)
         DispatchQueue.main.async {
-            if rc == 0 { self.boot() } else { self.fail("Couldn’t install Android.") }
+            if rc == 0 { self.boot(from: 0.7) } else { self.fail("Couldn’t install Android.") }
         }
     }
 
-    private func boot() {
+    private func boot(from base: Float) {
         status.text = "Starting Android…"
+        setProgress(base)
         let overlay = Bundle.main.url(forResource: "rom-overlay", withExtension: nil)!
         let overlays = [overlay.appendingPathComponent("emu13").path, overlay.appendingPathComponent("common").path].joined(separator: ":")
         try? fm.createDirectory(at: state, withIntermediateDirectories: true)
@@ -242,43 +244,123 @@ final class NeoController: UIViewController {
             me.append(String(decoding: UnsafeBufferPointer(start: text, count: len), as: UTF8.self))
         }, ctx)
         guard rc == 0 else { fail("Android couldn’t start."); return }
-        // Boot takes a couple of minutes on the interpreter: say how far along it is,
-        // and offer the log if no picture appears after a while.
+        // Boot takes minutes on the interpreter and its length is unknown, so the bar
+        // advances along an eased curve (never claiming completion) beside a running clock.
         let began = Date()
         timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
             guard let self, !self.sawFrame else { return }
             let seconds = Int(Date().timeIntervalSince(began))
             self.status.text = "Starting Android… \(seconds / 60):" + String(format: "%02d", seconds % 60)
-            if seconds > 240 { self.logButton.isHidden = false }
+            let eased = 1 - exp(-Double(seconds) / 180)
+            self.setProgress(base + Float(eased) * (0.97 - base))
+            if seconds % 10 == 0 {
+                LogStore.shared.append("[mem] \(seconds)s: \(os_proc_available_memory() / 1_048_576) MB available to the app, \(String(format: "%.1f", Double(indroid_neo_instructions()) / 1e9)) G instructions\n")
+            }
         }
     }
 }
 
-/// Console and logcat, for diagnosing a boot that doesn't reach the display.
+/// Persists everything the app and Android print to a file, so the log survives a
+/// crash or a jetsam kill and can be exported afterwards (also visible in the Files
+/// app under indroid > indroid.log). The previous run is kept as indroid.previous.log.
+final class LogStore {
+    static let shared = LogStore()
+    private let queue = DispatchQueue(label: "indroid.log")
+    private var handle: FileHandle?
+    private var written = 0
+    private let limit = 24 * 1024 * 1024
+    let url: URL
+    let previousURL: URL
+
+    private init() {
+        let dir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        url = dir.appendingPathComponent("indroid.log")
+        previousURL = dir.appendingPathComponent("indroid.previous.log")
+        let fm = FileManager.default
+        try? fm.removeItem(at: previousURL)
+        try? fm.moveItem(at: url, to: previousURL)
+        fm.createFile(atPath: url.path, contents: nil)
+        handle = try? FileHandle(forWritingTo: url)
+        let info = ProcessInfo.processInfo
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?"
+        append("[app] indroid \(version), iOS \(info.operatingSystemVersionString), \(info.physicalMemory / 1_048_576) MB RAM, \(os_proc_available_memory() / 1_048_576) MB available\n")
+    }
+
+    func append(_ text: String) {
+        queue.async {
+            guard let handle = self.handle, self.written < self.limit, let data = text.data(using: .utf8) else { return }
+            self.written += data.count
+            if #available(iOS 13.4, *) { try? handle.write(contentsOf: data) } else { handle.write(data) }
+            if self.written >= self.limit { handle.write(Data("\n[log truncated at 24 MB]\n".utf8)) }
+        }
+    }
+
+    /// The tail of the current log (and of the previous run's, if any) for display.
+    func text() -> String {
+        queue.sync {
+            func tail(_ url: URL) -> String {
+                guard let h = try? FileHandle(forReadingFrom: url) else { return "" }
+                defer { try? h.close() }
+                let size = (try? h.seekToEnd()) ?? 0
+                try? h.seek(toOffset: size > 400_000 ? size - 400_000 : 0)
+                return String(decoding: h.readDataToEndOfFile(), as: UTF8.self)
+            }
+            let previous = tail(previousURL)
+            let current = tail(url)
+            return previous.isEmpty ? current : "=== previous run ===\n\(previous)\n=== this run ===\n\(current)"
+        }
+    }
+}
+
+/// Console and logcat: text is selectable (long-press > Copy), and the Share button
+/// exports the log file (AirDrop, Save to Files, Messages, …).
 final class LogController: UIViewController {
     private let textView = UITextView()
-    init(text: String) {
-        super.init(nibName: nil, bundle: nil)
-        textView.text = text
-        title = "Log"
-    }
-    required init?(coder: NSCoder) { fatalError() }
+    private var refresh: Timer?
+
     override func viewDidLoad() {
         super.viewDidLoad()
+        title = "Log"
         view.backgroundColor = .systemBackground
         textView.isEditable = false
+        textView.isSelectable = true
         textView.font = .monospacedSystemFont(ofSize: 11, weight: .regular)
+        textView.adjustsFontForContentSizeCategory = true
         textView.alwaysBounceVertical = true
         textView.frame = view.bounds
         textView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         view.addSubview(textView)
-        navigationItem.rightBarButtonItem = UIBarButtonItem(systemItem: .done, primaryAction: UIAction { [weak self] _ in
+        navigationItem.leftBarButtonItem = UIBarButtonItem(systemItem: .done, primaryAction: UIAction { [weak self] _ in
             self?.dismiss(animated: true)
         })
+        navigationItem.rightBarButtonItems = [
+            UIBarButtonItem(image: UIImage(systemName: "square.and.arrow.up"), primaryAction: UIAction { [weak self] _ in self?.share() }),
+            UIBarButtonItem(image: UIImage(systemName: "doc.on.doc"), primaryAction: UIAction { [weak self] _ in
+                UIPasteboard.general.string = self?.textView.text
+            }),
+        ]
+        navigationItem.rightBarButtonItems?[0].accessibilityLabel = "Share log"
+        navigationItem.rightBarButtonItems?[1].accessibilityLabel = "Copy log"
+        reload(scrollToEnd: true)
+        refresh = Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { [weak self] _ in self?.reload(scrollToEnd: false) }
     }
-    func update(_ text: String) {
+    deinit { refresh?.invalidate() }
+
+    private func reload(scrollToEnd: Bool) {
+        let text = LogStore.shared.text()
+        // Don't fight the reader: only follow the end when they are already near it.
+        let nearEnd = textView.contentOffset.y + textView.bounds.height >= textView.contentSize.height - 80
+        guard text != textView.text else { return }
         textView.text = text
-        textView.scrollRangeToVisible(NSRange(location: (text as NSString).length, length: 0))
+        if scrollToEnd || nearEnd {
+            textView.scrollRangeToVisible(NSRange(location: (text as NSString).length, length: 0))
+        }
+    }
+
+    private func share() {
+        let sheet = UIActivityViewController(activityItems: [LogStore.shared.url], applicationActivities: nil)
+        sheet.popoverPresentationController?.barButtonItem = navigationItem.rightBarButtonItems?.first
+        present(sheet, animated: true)
     }
 }
 
