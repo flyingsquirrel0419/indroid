@@ -216,6 +216,11 @@ final class NeoController: UIViewController {
         if let gpu = Bundle.main.privateFrameworksURL?.appendingPathComponent("libgfxstream_backend.dylib"),
            fm.fileExists(atPath: gpu.path) {
             setenv("INDROID_GFXSTREAM", gpu.path, 1)
+            // iOS has no system Vulkan loader: gfxstream talks to the bundled MoltenVK directly.
+            if let mvk = Bundle.main.privateFrameworksURL?.appendingPathComponent("MoltenVK.framework/MoltenVK") {
+                setenv("ANDROID_EMU_VK_LOADER_PATH", mvk.path, 1)
+                setenv("ANDROID_EMU_VK_ICD", "moltenvk", 1)
+            }
         } else {
             append("[gpu] libgfxstream_backend.dylib is not bundled in this build: Android will boot without a display.\n")
         }
