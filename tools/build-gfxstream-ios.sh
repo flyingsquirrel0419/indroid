@@ -138,7 +138,7 @@ pkg-config = 'pkg-config'
 [built-in options]
 c_args = ['-arch', 'arm64', '-isysroot', '$sdk', '-miphoneos-version-min=15.0']
 # Khronos EGL/GLES headers ship in the tree; no GL is linked, but the decoders include them.
-cpp_args = ['-arch', 'arm64', '-isysroot', '$sdk', '-miphoneos-version-min=15.0', '-I$gfx_src/common/opengl/include']
+cpp_args = ['-arch', 'arm64', '-isysroot', '$sdk', '-miphoneos-version-min=15.0', '-I$gfx_src/common/opengl/include', '-DVK_USE_PLATFORM_METAL_EXT']
 c_link_args = ['-arch', 'arm64', '-isysroot', '$sdk', '-miphoneos-version-min=15.0']
 cpp_link_args = ['-arch', 'arm64', '-isysroot', '$sdk', '-miphoneos-version-min=15.0']
 pkg_config_path = ['$out/lib/pkgconfig']
